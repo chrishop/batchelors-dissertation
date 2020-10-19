@@ -3,30 +3,108 @@
 \section{Introduction}
 %-----------------------------------------------------------------------------------------
 
-\subsection{Project overview}
-\lipsum[5-7]
+\subsection{Motivation and Context}
+Machine Learning algorithms have become ubiquitous in modern life. Powering
+social media feeds, email spam filters, advertising personalisation and even
+identifying breast cancer more accurately and earlier than doctors. \cite{Mammograms2020}
+The scale of datasets are becoming truly gargantuan, since 2008 Google has been
+processing more 20PB of data a day using their MapReduce algorithm.
+\cite{googlemapreduce2008} While services like the Internet Archive as of 2020
+contain over 70PB in its database. We now have labeled datasets such as AViD
+have 467k videos and 887 action classes, which is in the order of terabytes.
+\cite{piergiovanni2020avid} 
+While the data grows the as does the Machine Learning models in orter to to
+obtain ever more accurate results. The cutting edge GTP-3 Natural Language
+Processing model contains 175 Billion parameters. \cite{fewshowlearners2020gpt}
+And efforts are being made to create models with trillions of parameters.
+\cite{rajbhandari2020zero}
+\par
 
-\subsection{Project Aims}
+Deriving meaning from these vast quantities of data to obtaining nuanced
+insights from them is a difficult task. Not only because deeper insights into
+data require a larger Machine Learning models. But because more data is needed
+to populate the parameters of these models. Both of these factors contribute to the
+need to distribute the computation of the model across multiple nodes otherwise
+known as Distributed Machine Learning. Distributed Machine Learning is often a
+pre-requisite for training models now datasets and models are becoming so large.
+\par
+
+% is becoming more complex as the insights we seek to solve are increasingly nuanced. It
+% therefore follows that out Machine Learning models and algorithms are becoming
+% ever more complex, requiring more data to be trained sufficiently. Due to this,
+% distributed machine learning has become a pre-requisite for training sizeable
+% models with an equally sizeable dataset.
+
+% revise this
+The popular current solution is to have multiple machines compute the model
+together, communicating the improvements that they've made to each other. The
+model goes from operating on a single machine possessing all the data and
+needing to do all the computation, to a worker and parameter server paradigm. In
+which the parameter server contains the model and the workers perform operations
+on it using test data segmented between them. \cite{ParameterServers}
+\par
+
+There are two main variations of this parameter server model.
+\newline
+Once functions similarly to a map-reduce, the parameter server has to
+wait for the last worker to be finished before it can calculate the new
+global parameters. [cite here]
+\newline
+The other the workers operate asynchronously constantly updating the parameter server,
+the parameter server calculating new global parameters periodically.  [cite another here]
+\par
+
+Whilst this method is the most common method of machine learning with many benefits, there are 3 key drawbacks:
+\begin{itemize}
+    \item The model sacrifices efficiency in either time or computation. Either
+    it must wait for all workers to be done each round, or redundant
+    computations must be made
+    \item when the parameter server is calculating the new global parameters the
+    workers are idle or otherwise computing on stale data.
+    \item Each time the parameter server calculates a new global parameters,
+    these parameters must be broadcast to each worker simultaneously consuming
+    considerable network bandwidth, and limiting scalability.
+\end{itemize}
+
+My solution to address these issues is to introduce a model for Distributed Machine Learning 
+    
+
+  
+
+
+% \newline
+% holds the global weights of the model. The workers checkout the global
+% parameters and use training data to perform a gradient descent algorithm. The
+% workers then sends the parameter server the new gradients they have calculated. The
+% parameter server aggregates the responses from the workers and then applies it
+% to the global weights in the parameter server.
+
+
+
+
+\subsection{Aims}
 \lipsum[3]
 
 
 
-\subsection{Overview}
-This document is split up into the following sections:
-\begin{itemize}
- \item \textbf{Section 1} current section. Introduce the project and its aims.
- \item \textbf{Section 2} presents related research material and similar applications and areas.
- \item \textbf{Section 3} gives an overview on the technological choices used in the project.
- \item \textbf{Section 4} introduces the project plan and time management.
- \item \textbf{Section 5} presents the design stages of the application.
- \item \textbf{Section 6} outlines the application requirements and specifications
- \item \textbf{Section 7} introduces the implementation and how they have been implemented.
- \item \textbf{Section 8} describes the testing process
- \item \textbf{Section 9} presents potential ideas for future work on the application.
-\end{itemize}
+
 
 \subsection{Problem}
 \todo{Address problems and what are the problems? \\ many solutions\\}
 T\lipsum[4]
 
+\subsection{Overview}
+This document is split up into the following sections:
+\begin{itemize}
+ \item \textbf{Section 1} Current section. Introduce the project and its aims.
+ \item \textbf{Section 2} Presents related research material and similar applications and areas.
+ \item \textbf{Section 3} Gives an overview on the technological choices that will be used.
+ \item \textbf{Section 4} Project plan and time management.
+ \item \textbf{Section 5} Summary of previous sections.
+ %\item \textbf{Section 5} presents the design stages of the application.
+ %\item \textbf{Section 6} outlines the application requirements and specifications
+ %\item \textbf{Section 7} introduces the implementation and how they have been implemented.
+ %\item \textbf{Section 8} describes the testing process
+ %\item \textbf{Section 9} presents potential ideas for future work on the application.
+\end{itemize}
 

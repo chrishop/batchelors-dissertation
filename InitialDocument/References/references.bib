@@ -5,5 +5,122 @@
   pages={182--187},
   year={2011},
   organization={IEEE}
+},
+@article{googlemapreduce2008,
+author = {Dean, Jeffrey and Ghemawat, Sanjay},
+title = {MapReduce: Simplified Data Processing on Large Clusters},
+year = {2008},
+issue_date = {January 2008},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {51},
+number = {1},
+issn = {0001-0782},
+url = {https://doi.org/10.1145/1327452.1327492},
+doi = {10.1145/1327452.1327492},
+abstract = {MapReduce is a programming model and an associated implementation for processing and generating large datasets that is amenable to a broad variety of real-world tasks. Users specify the computation in terms of a map and a reduce function, and the underlying runtime system automatically parallelizes the computation across large-scale clusters of machines, handles machine failures, and schedules inter-machine communication to make efficient use of the network and disks. Programmers find the system easy to use: more than ten thousand distinct MapReduce programs have been implemented internally at Google over the past four years, and an average of one hundred thousand MapReduce jobs are executed on Google's clusters every day, processing a total of more than twenty petabytes of data per day.},
+journal = {Commun. ACM},
+month = jan,
+pages = {107–113},
+numpages = {7}
+},
+@misc{piergiovanni2020avid,
+      title={AViD Dataset: Anonymized Videos from Diverse Countries}, 
+      author={AJ Piergiovanni and Michael S. Ryoo},
+      year={2020},
+      eprint={2007.05515},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+},
+@article{ParallelTopicModels,
+author = {Smola, Alexander and Narayanamurthy, Shravan},
+title = {An Architecture for Parallel Topic Models},
+year = {2010},
+issue_date = {September 2010},
+publisher = {VLDB Endowment},
+volume = {3},
+number = {1–2},
+issn = {2150-8097},
+url = {https://doi.org/10.14778/1920841.1920931},
+doi = {10.14778/1920841.1920931},
+abstract = {This paper describes a high performance sampling architecture for inference of latent topic models on a cluster of workstations. Our system is faster than previous work by over an order of magnitude and it is capable of dealing with hundreds of millions of documents and thousands of topics.The algorithm relies on a novel communication structure, namely the use of a distributed (key, value) storage for synchronizing the sampler state between computers. Our architecture entirely obviates the need for separate computation and synchronization phases. Instead, disk, CPU, and network are used simultaneously to achieve high performance. We show that this architecture is entirely general and that it can be extended easily to more sophisticated latent variable models such as n-grams and hierarchies.},
+journal = {Proc. VLDB Endow.},
+month = sep,
+pages = {703–710},
+numpages = {8}
+},
+@inproceedings {ParameterServers,
+author = {Mu Li and David G. Andersen and Jun Woo Park and Alexander J. Smola and Amr Ahmed and Vanja Josifovski and James Long and Eugene J. Shekita and Bor-Yiing Su},
+title = {Scaling Distributed Machine Learning with the Parameter Server},
+booktitle = {11th {USENIX} Symposium on Operating Systems Design and Implementation ({OSDI} 14)},
+year = {2014},
+isbn = { 978-1-931971-16-4},
+address = {Broomfield, CO},
+pages = {583--598},
+url = {https://www.usenix.org/conference/osdi14/technical-sessions/presentation/li_mu},
+publisher = {{USENIX} Association},
+month = oct,
+},
+@Article{Mammograms2020,
+author={McKinney, Scott Mayer
+and Sieniek, Marcin
+and Godbole, Varun
+and Godwin, Jonathan
+and Antropova, Natasha
+and Ashrafian, Hutan
+and Back, Trevor
+and Chesus, Mary
+and Corrado, Greg S.
+and Darzi, Ara
+and Etemadi, Mozziyar
+and Garcia-Vicente, Florencia
+and Gilbert, Fiona J.
+and Halling-Brown, Mark
+and Hassabis, Demis
+and Jansen, Sunny
+and Karthikesalingam, Alan
+and Kelly, Christopher J.
+and King, Dominic
+and Ledsam, Joseph R.
+and Melnick, David
+and Mostofi, Hormuz
+and Peng, Lily
+and Reicher, Joshua Jay
+and Romera-Paredes, Bernardino
+and Sidebottom, Richard
+and Suleyman, Mustafa
+and Tse, Daniel
+and Young, Kenneth C.
+and De Fauw, Jeffrey
+and Shetty, Shravya},
+title={International evaluation of an AI system for breast cancer screening},
+journal={Nature},
+year={2020},
+month={Jan},
+day={01},
+volume={577},
+number={7788},
+pages={89-94},
+abstract={Screening mammography aims to identify breast cancer at earlier stages of the disease, when treatment can be more successful1. Despite the existence of screening programmes worldwide, the interpretation of mammograms is affected by high rates of false positives and false negatives2. Here we present an artificial intelligence (AI) system that is capable of surpassing human experts in breast cancer prediction. To assess its performance in the clinical setting, we curated a large representative dataset from the UK and a large enriched dataset from the USA. We show an absolute reduction of 5.7{\%} and 1.2{\%} (USA and UK) in false positives and 9.4{\%} and 2.7{\%} in false negatives. We provide evidence of the ability of the system to generalize from the UK to the USA. In an independent study of six radiologists, the AI system outperformed all of the human readers: the area under the receiver operating characteristic curve (AUC-ROC) for the AI system was greater than the AUC-ROC for the average radiologist by an absolute margin of 11.5{\%}. We ran a simulation in which the AI system participated in the double-reading process that is used in the UK, and found that the AI system maintained non-inferior performance and reduced the workload of the second reader by 88{\%}. This robust assessment of the AI system paves the way for clinical trials to improve the accuracy and efficiency of breast cancer screening.},
+issn={1476-4687},
+doi={10.1038/s41586-019-1799-6},
+url={https://doi.org/10.1038/s41586-019-1799-6}
+},
+@misc{fewshowlearners2020gpt,
+      title={Language Models are Few-Shot Learners}, 
+      author={Tom B. Brown and Benjamin Mann and Nick Ryder and Melanie Subbiah and Jared Kaplan and Prafulla Dhariwal and Arvind Neelakantan and Pranav Shyam and Girish Sastry and Amanda Askell and Sandhini Agarwal and Ariel Herbert-Voss and Gretchen Krueger and Tom Henighan and Rewon Child and Aditya Ramesh and Daniel M. Ziegler and Jeffrey Wu and Clemens Winter and Christopher Hesse and Mark Chen and Eric Sigler and Mateusz Litwin and Scott Gray and Benjamin Chess and Jack Clark and Christopher Berner and Sam McCandlish and Alec Radford and Ilya Sutskever and Dario Amodei},
+      year={2020},
+      eprint={2005.14165},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+},
+@misc{rajbhandari2020zero,
+      title={ZeRO: Memory Optimizations Toward Training Trillion Parameter Models}, 
+      author={Samyam Rajbhandari and Jeff Rasley and Olatunji Ruwase and Yuxiong He},
+      year={2020},
+      eprint={1910.02054},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
 }
+
 

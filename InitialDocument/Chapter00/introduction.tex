@@ -6,14 +6,17 @@
 \subsection{Motivation and Context}
 Machine Learning algorithms have become ubiquitous in modern life. Powering
 social media feeds, email spam filters, advertising personalisation and even
-identifying breast cancer more accurately and earlier than doctors. \cite{Mammograms2020}
-The scale of datasets are becoming truly gargantuan, since 2008 Google has been
-processing more 20PB of data a day using their MapReduce algorithm.
+identifying breast cancer more accurately and earlier than doctors.
+\cite{Mammograms2020} To train these Machine Learning algorithms large datasets
+are needed. The more nuanced and complex the problem being solved the more data
+is necessary. As the scale of problems we are trying to solve dramatically
+increase, the scale of datasets are becoming truly gargantuan. Since 2008 Google
+has been processing more 20PB of data a day using their MapReduce algorithm.
 \cite{googlemapreduce2008} While services like the Internet Archive as of 2020
 contain over 70PB in its database. We now have labeled datasets such as AViD
 have 467k videos and 887 action classes, which is in the order of terabytes.
 \cite{piergiovanni2020avid} 
-While the data grows the as does the Machine Learning models in orter to to
+Whilst the data grows the as does the Machine Learning models in order to to
 obtain ever more accurate results. The cutting edge GTP-3 Natural Language
 Processing model contains 175 Billion parameters. \cite{fewshowlearners2020gpt}
 And efforts are being made to create models with trillions of parameters.
@@ -23,10 +26,11 @@ And efforts are being made to create models with trillions of parameters.
 Deriving meaning from these vast quantities of data to obtaining nuanced
 insights from them is a difficult task. Not only because deeper insights into
 data require a larger Machine Learning models. But because more data is needed
-to populate the parameters of these models. Both of these factors contribute to the
-need to distribute the computation of the model across multiple nodes otherwise
-known as Distributed Machine Learning. Distributed Machine Learning is often a
-pre-requisite for training models now datasets and models are becoming so large.
+to populate the parameters of these models. Both of these factors contribute to
+the need to distribute the computation of the model across multiple nodes
+otherwise known as Distributed Machine Learning. Distributed Machine Learning is
+often a pre-requisite for training models now datasets and models are becoming
+so large. \cite{ParameterServers}
 \par
 
 % is becoming more complex as the insights we seek to solve are increasingly nuanced. It
@@ -44,17 +48,14 @@ which the parameter server contains the model and the workers perform operations
 on it using test data segmented between them. \cite{ParameterServers}
 \par
 
-There are two main variations of this parameter server model.
-\newline
-Once functions similarly to a map-reduce, the parameter server has to
-wait for the last worker to be finished before it can calculate the new
-global parameters. [cite here]
-\newline
-The other the workers operate asynchronously constantly updating the parameter server,
-the parameter server calculating new global parameters periodically.  [cite another here]
-\par
-
-Whilst this method is the most common method of machine learning with many benefits, there are 3 key drawbacks:
+There are two main variations with respect to the operation of the workers in
+parameter server model: 1) The parameter server has to wait for the last worker
+to be finished before it can calculate the new global parameters. much like the
+MapReduce algorithm. \cite{googlemapreduce2008} 2) The workers operate
+asynchronously constantly updating the parameter server, the parameter server
+calculating new global parameters periodically.  \cite{Qirong2013SSP} Whilst
+this method is the most common method of machine learning with many benefits,
+there are 3 key drawbacks:
 \begin{itemize}
     \item The model sacrifices efficiency in either time or computation. Either
     it must wait for all workers to be done each round, or redundant
@@ -62,12 +63,39 @@ Whilst this method is the most common method of machine learning with many benef
     \item when the parameter server is calculating the new global parameters the
     workers are idle or otherwise computing on stale data.
     \item Each time the parameter server calculates a new global parameters,
-    these parameters must be broadcast to each worker simultaneously consuming
-    considerable network bandwidth, and limiting scalability.
+    these parameters must be broadcast to each worker simultaneously, consuming vast network bandwidth.
 \end{itemize}
 
-My solution to address these issues is to introduce a model for Distributed Machine Learning 
-    
+As has already been addressed frequently models can get so large that they can
+no longer feasibly be held within one worker. Therefore there are also variations with respect to how much of the
+model each worker operates on: 1) The model is segmented and split between
+worker. This is known as \textit{Model Parallelism} 2) The data is split between
+the workers which have their own full local models, but are synced with each
+other at periodic intervals. This is known as \textit{Data Parallelism} \cite{Xing2015Petuum}
+Though model parallelism shows promise it has its own set of drawbacks:
+\begin{itemize}
+    \item Often in model parallelism nodes do not communicate with each other,
+    this makes it performing algorithms such as Stochastic Gradient Decent
+    difficult as clusters of nodes are isolated.
+    \item some model parameters take more algorithmic iterations to converge
+    than others, so that they converges at the same rate,
+    this means that some nodes may be idle, not spreading the load equally or
+    efficiently. \cite{Dean2012Distbelief}
+    \item Because some parameters converge at different rates, a scheduler is
+    needed. However this in turn require more computational overhead and
+    communication and reduces iteration throughput. \cite{kim2016STRADS}
+\end{itemize}
+
+\subsection{Aims}
+My solution to address these issues raised above is to introduce a new model for Distributed
+Machine Learning: \textit{Distiller}. Distiller is a Ring Topological, Model
+Parallel Distributed Machine Learning framework focusing on optimising
+Distributed Stochastic Gradient Descent.
+
+
+
+
+
 
   
 
@@ -82,8 +110,7 @@ My solution to address these issues is to introduce a model for Distributed Mach
 
 
 
-\subsection{Aims}
-\lipsum[3]
+
 
 
 

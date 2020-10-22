@@ -37,7 +37,8 @@ can produce bottlenecks when too many machines are added. With more independent
 systems working in conjunction and training that costs extensive time and
 expenses, resiliency has also become and important factor in Distributed Machine
 Learning. When a Machine fails to work a Distributed Machine Learning System
-must have contingency plans in place to.
+must have contingency plans in place to make sure the minimum amount of
+parameter data is lost.
 \par
 
 % is becoming more complex as the insights we seek to solve are increasingly nuanced. It
@@ -100,63 +101,99 @@ parallelism shows promise it has its own set of drawbacks:
 My solution to address these issues raised above is to introduce a new model for
 Distributed Machine Learning: \textit{RingTMP}. RingTMP (Ring Topological Model
 Parallel) is a Ring Topological Model Parallel Distributed Machine Learning
-framework focusing on optimising Distributed Stochastic Gradient Descent.
-\par
-
-Each of the limitations I have described before I aim to address with the
-RingTMP Framework:
+framework focusing on optimising Distributed Stochastic Gradient Descent. This
+is a novel design drawing in inspiration from the STRADS and Distbelief machine
+learning frameworks, \cite{kim2016STRADS,Dean2012Distbelief} in addition to
+identifying issues with existing systems and addressing them. These are the
+benefits my system will have over both existing data parallel systems and model parallel
+systems:
 \begin{itemize}
-    \item RingTMP aims to reduce the time workers are idle to lower than the
-    parameter server model. This will manifest itself by distributing the work
-    between workers more proportionally, This means each computers resource is
-    used more efficiently and training should be faster per iteration.
-    \item The system will also not have a global parameter store, meaning there
-    will be no need for communication of weights across the network
-    \item As the node network has a ring topology not a star topology due the
-    lack of a need of a parameter server prevents one node getting flooded with
-    data each iteration. This isn't scalable, as when the workers increase so
-    does the data flooding the parameter server leading to bottlenecks. In
-    contrast the ring topology allows data to flow in lockstep, with no
-    bottlenecking
-    \item There will be no isolated nodes as can be an issue in many model
-    parallel designs, but they can communicate with each other by design.
-    \item The convergence rate will be consistent across all nodes, and they are
-    all sharing a global problem rather than working on their own subproblems.
-    \item Because the convergence rate is the same across all nodes no scheduler
-    is necessary. Instead scheduling is managed in a decentralised manner via
-    communication with adjacent nodes.
+    % \item RingTMP aims to reduce the time workers are idle to lower than the
+    % parameter server model. This will manifest itself by distributing the work
+    % between workers more proportionally, This means each computers resource is
+    % used more efficiently and training should be faster per iteration.
+    % \item The system will also not have a global parameter store, meaning there
+    % will be no need for communication of weights across the network
+    % \item As the node network has a ring topology not a star topology due the
+    % lack of a need of a parameter server prevents one node getting flooded with
+    % data each iteration. This isn't scalable, as when the workers increase so
+    % does the data flooding the parameter server leading to bottlenecks. In
+    % contrast the ring topology allows data to flow in lockstep, with no
+    % bottlenecking
+    % \item The convergence rate will be consistent across all nodes, and they are
+    % all sharing a global problem rather than working on their own subproblems.
+    % \item Because the convergence rate is the same across all nodes no scheduler
+    % is necessary. Instead scheduling is managed in a decentralised manner via
+    % communication with adjacent nodes.
+
+    \item Workers will have less idle time, because the work will be distributed
+    more proportionally between nodes. And computing resources will be used more
+    efficiently.
+    \item There will less communication across nodes as the parameter server so
+    not need to send their local weights to the global parameter server each
+    iteration.
+    \item There will also be a potential for larger communication bandwidth, as
+    with RingTMP ring topology only adjacent nodes need to communicate. While
+    with a parameter Server model every worker needs to communicate with the
+    Parameter server at the end of each iteration, which can lead to
+    bottlenecking.
+    \item The nodes require no scheduling as in some model parallel systems.
+    Instead scheduling is managed in a decentralised manner via communication
+    with adjacent nodes. This also makes the system more resilient, in the case
+    of the scheduler crashing.
+
+
 \end{itemize}
 
-As I have already alluded to this will take the form of a framework that will
-operate on multiple machines which henceforth I will describe as nodes. Each
-nodes contains a series of adjacent of Deep Neural Network (DNN) layers. The
-nodes (as before described) are arranged in a ring. In the clockwise direction
-matrix multiplication is performed and in the anticlockwise direction gradient
-descent through backpropagation is performed. There are two kinds of nodes
-master nodes and worker nodes. Master nodes have direct access to the training
-data being input into the Neural Network, whilst also performing operations on
-the data flowing through the neural network. There is only one master node per
-network and as many worker nodes as desired. 
-\par
-
-Each node has a 3 part structure.
+My aims more specifically for this project are to:
 \begin{itemize}
-    \item The Parameter Store. This contains the parameters for this section of
-    the model. For the majority of the time its only accessed by elements within
-    the node.
-    \item The Multiplication Module. Reads the parameter server weights and
-    multiplies them with the matrix given by the previous node.
-    \item The Backpropagation Module. Takes the last layer of the previous node
-    and the parameters in the store. It uses them to calculate the new
-    parameters they are then placed in the Parameter Store.
+    \item Create a prototype RingTMP framework and run it multiple machines
+    simultaneously.
+    \item Create a parameter server model framework using the same tools and run
+    that over multiple machines simultaneously.
+    \item Show that RingTMP reduces the time workers are idle in comparison to
+    the parameter server model.
+    \item Exhibit that per iteration RingTMP makes more progress than the parameter
+    server.
+    \item Display that RingTMP is more scalable than a generic parameter server.
+    \item Show that this solution can be as resilient as a parameter server
+    model distributed neural network.
+    \item Demonstrate that RingTMP can hold larger models on comparison to a
+    standard parameter server, where each worker hold the whole model.
 \end{itemize}
 
-The master node has the addition of being connected to the training dataset. A
-master node takes an single training example and its solution. It then send the
-example around the ring until it arrives back at the master node at which point
-the master node evaluates the decision the Neural Network has come to and begins
-the backpropagation progress along the way it came, in order to improve the
-model.
+
+
+% As I have already alluded to this will take the form of a framework that will
+% operate on multiple machines which henceforth I will describe as nodes. Each
+% nodes contains a series of adjacent of Deep Neural Network (DNN) layers. The
+% nodes (as before described) are arranged in a ring. In the clockwise direction
+% matrix multiplication is performed and in the anticlockwise direction gradient
+% descent through backpropagation is performed. There are two kinds of nodes
+% master nodes and worker nodes. Master nodes have direct access to the training
+% data being input into the Neural Network, whilst also performing operations on
+% the data flowing through the neural network. There is only one master node per
+% network and as many worker nodes as desired. 
+% \par
+
+% Each node has a 3 part structure.
+% \begin{itemize}
+%     \item The Parameter Store. This contains the parameters for this section of
+%     the model. For the majority of the time its only accessed by elements within
+%     the node.
+%     \item The Multiplication Module. Reads the parameter server weights and
+%     multiplies them with the matrix given by the previous node.
+%     \item The Backpropagation Module. Takes the last layer of the previous node
+%     and the parameters in the store. It uses them to calculate the new
+%     parameters they are then placed in the Parameter Store.
+% \end{itemize}
+
+% The master node has the addition of being connected to the training dataset. A
+% master node takes an single training example and its solution. It then send the
+% example around the ring until it arrives back at the master node at which point
+% the master node evaluates the decision the Neural Network has come to and begins
+% the backpropagation progress along the way it came, in order to improve the
+% model.
 
 
 
@@ -164,35 +201,27 @@ model.
 
 % produce diagram of network structure
 
-% talk about good qualities of a distributed neural network system and keys aims based upon that
-
 % talk about issue of communication vs computation
 
 
-% \newline
-% holds the global weights of the model. The workers checkout the global
-% parameters and use training data to perform a gradient descent algorithm. The
-% workers then sends the parameter server the new gradients they have calculated. The
-% parameter server aggregates the responses from the workers and then applies it
-% to the global weights in the parameter server.
 
 
-\subsection{Problem}
-\todo{Address problems and what are the problems? \\ many solutions\\}
-T\lipsum[4]
+% \subsection{Problem}
+% \todo{Address problems and what are the problems? \\ many solutions\\}
+% T\lipsum[4]
 
-\subsection{Overview}
-This document is split up into the following sections:
-\begin{itemize}
- \item \textbf{Section 1} Current section. Introduce the project and its aims.
- \item \textbf{Section 2} Presents related research material and similar applications and areas.
- \item \textbf{Section 3} Gives an overview on the technological choices that will be used.
- \item \textbf{Section 4} Project plan and time management.
- \item \textbf{Section 5} Summary of previous sections.
- %\item \textbf{Section 5} presents the design stages of the application.
- %\item \textbf{Section 6} outlines the application requirements and specifications
- %\item \textbf{Section 7} introduces the implementation and how they have been implemented.
- %\item \textbf{Section 8} describes the testing process
- %\item \textbf{Section 9} presents potential ideas for future work on the application.
-\end{itemize}
+% \subsection{Overview}
+% This document is split up into the following sections:
+% \begin{itemize}
+%  \item \textbf{Section 1} Current section. Introduce the project and its aims.
+%  \item \textbf{Section 2} Presents related research material and similar applications and areas.
+%  \item \textbf{Section 3} Gives an overview on the technological choices that will be used.
+%  \item \textbf{Section 4} Project plan and time management.
+%  \item \textbf{Section 5} Summary of previous sections.
+%  %\item \textbf{Section 5} presents the design stages of the application.
+%  %\item \textbf{Section 6} outlines the application requirements and specifications
+%  %\item \textbf{Section 7} introduces the implementation and how they have been implemented.
+%  %\item \textbf{Section 8} describes the testing process
+%  %\item \textbf{Section 9} presents potential ideas for future work on the application.
+% \end{itemize}
 

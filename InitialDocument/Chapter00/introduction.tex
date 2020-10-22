@@ -91,6 +91,25 @@ My solution to address these issues raised above is to introduce a new model for
 Machine Learning: \textit{Distiller}. Distiller is a Ring Topological, Model
 Parallel Distributed Machine Learning framework focusing on optimising
 Distributed Stochastic Gradient Descent.
+\par
+
+Each of the limitations I have described before I aim to address with the Distiller Framework:
+\begin{itemize}
+    \item Distiller aims to reduce the time workers are idle to lower than the
+    parameter server model. This will manifest itself by distributing the work
+    between workers more proportionally, This means each computers resource is
+    used more efficiently and training should be faster per iteration.
+    \item The system will also not have a global parameter store, meaning there
+    will be no need for communication of weights across the network
+    \item As the network has a ring topology not a star topology due the lack of
+    a need of a parameter server prevents one machine getting flooded with data
+    each iteration. The star approach also isn't scalable, as when the workers
+    increase as does the data flooding the parameter server leading to
+    bottlenecks. The ring topology lets data flow to its neighbour meaning
+    communication between nodes is less congested and has higher potential
+    bandwidth by design.
+    \item 
+\end{itemize}
 
 
 

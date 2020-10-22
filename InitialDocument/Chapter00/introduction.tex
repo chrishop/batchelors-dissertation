@@ -45,7 +45,7 @@ together, communicating the improvements that they've made to each other. The
 model goes from operating on a single machine possessing all the data and
 needing to do all the computation, to a worker and parameter server paradigm. In
 which the parameter server contains the model and the workers perform operations
-on it using test data segmented between them. \cite{ParameterServers}
+on it using test data segmented between them. \cite{LI2014ParameterServers}
 \par
 
 There are two main variations with respect to the operation of the workers in
@@ -59,20 +59,22 @@ there are 3 key drawbacks:
 \begin{itemize}
     \item The model sacrifices efficiency in either time or computation. Either
     it must wait for all workers to be done each round, or redundant
-    computations must be made
+    computations must be made. \cite{Chilimbi2014ADAM}
     \item when the parameter server is calculating the new global parameters the
-    workers are idle or otherwise computing on stale data.
+    workers are idle or otherwise computing on stale data. \cite{Verbraeken2020MLSurvey}
     \item Each time the parameter server calculates a new global parameters,
-    these parameters must be broadcast to each worker simultaneously, consuming vast network bandwidth.
+    these parameters must be broadcast to each worker simultaneously, consuming
+    vast network bandwidth. \cite{LI2014ParameterServers}
 \end{itemize}
 
 As has already been addressed frequently models can get so large that they can
-no longer feasibly be held within one worker. Therefore there are also variations with respect to how much of the
-model each worker operates on: 1) The model is segmented and split between
-worker. This is known as \textit{Model Parallelism} 2) The data is split between
-the workers which have their own full local models, but are synced with each
-other at periodic intervals. This is known as \textit{Data Parallelism} \cite{Xing2015Petuum}
-Though model parallelism shows promise it has its own set of drawbacks:
+no longer feasibly be held within one worker. Therefore there are also
+variations with respect to how much of the model each worker operates on: 1) The
+model is segmented and split between worker. This is known as \textit{Model
+Parallelism} 2) The data is split between the workers which have their own full
+local models, but are synced with each other at periodic intervals. This is
+known as \textit{Data Parallelism} \cite{Xing2015Petuum} Though model
+parallelism shows promise it has its own set of drawbacks:
 \begin{itemize}
     \item Often in model parallelism nodes do not communicate with each other,
     this makes it performing algorithms such as Stochastic Gradient Decent
@@ -87,13 +89,14 @@ Though model parallelism shows promise it has its own set of drawbacks:
 \end{itemize}
 
 \subsection{Aims}
-My solution to address these issues raised above is to introduce a new model for Distributed
-Machine Learning: \textit{Distiller}. Distiller is a Ring Topological, Model
-Parallel Distributed Machine Learning framework focusing on optimising
-Distributed Stochastic Gradient Descent.
+My solution to address these issues raised above is to introduce a new model for
+Distributed Machine Learning: \textit{Distiller}. Distiller is a Ring
+Topological, Model Parallel Distributed Machine Learning framework focusing on
+optimising Distributed Stochastic Gradient Descent.
 \par
 
-Each of the limitations I have described before I aim to address with the Distiller Framework:
+Each of the limitations I have described before I aim to address with the
+Distiller Framework:
 \begin{itemize}
     \item Distiller aims to reduce the time workers are idle to lower than the
     parameter server model. This will manifest itself by distributing the work
@@ -101,14 +104,19 @@ Each of the limitations I have described before I aim to address with the Distil
     used more efficiently and training should be faster per iteration.
     \item The system will also not have a global parameter store, meaning there
     will be no need for communication of weights across the network
-    \item As the network has a ring topology not a star topology due the lack of
-    a need of a parameter server prevents one machine getting flooded with data
-    each iteration. The star approach also isn't scalable, as when the workers
-    increase as does the data flooding the parameter server leading to
-    bottlenecks. The ring topology lets data flow to its neighbour meaning
-    communication between nodes is less congested and has higher potential
-    bandwidth by design.
-    \item 
+    \item As the node network has a ring topology not a star topology due the
+    lack of a need of a parameter server prevents one node getting flooded with
+    data each iteration. This isn't scalable, as when the workers increase so
+    does the data flooding the parameter server leading to bottlenecks. In
+    contrast the ring topology allows data to flow in lockstep, with no
+    bottlenecking
+    \item There will be no isolated nodes as can be an issue in many model
+    parallel designs, but they can communicate with each other by design.
+    \item The convergence rate will be consistent across all nodes, and they are
+    all sharing a global problem rather than working on their own subproblems.
+    \item Because the convergence rate is the same across all nodes no scheduler
+    is necessary. Instead scheduling is managed in a decentralised manner via
+    communication with adjacent nodes.
 \end{itemize}
 
 

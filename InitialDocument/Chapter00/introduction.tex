@@ -30,7 +30,14 @@ to populate the parameters of these models. Both of these factors contribute to
 the need to distribute the computation of the model across multiple nodes
 otherwise known as Distributed Machine Learning. Distributed Machine Learning is
 often a pre-requisite for training models now datasets and models are becoming
-so large. \cite{ParameterServers}
+so large. \cite{LI2014ParameterServers} Scalability is another challenge a
+Distributed Machine Learning system must face. As more machines are added, to a
+system the communication overhead increases. This is a limited resource which
+can produce bottlenecks when too many machines are added. With more independent
+systems working in conjunction and training that costs extensive time and
+expenses, resiliency has also become and important factor in Distributed Machine
+Learning. When a Machine fails to work a Distributed Machine Learning System
+must have contingency plans in place to.
 \par
 
 % is becoming more complex as the insights we seek to solve are increasingly nuanced. It
@@ -61,7 +68,8 @@ there are 3 key drawbacks:
     it must wait for all workers to be done each round, or redundant
     computations must be made. \cite{Chilimbi2014ADAM}
     \item when the parameter server is calculating the new global parameters the
-    workers are idle or otherwise computing on stale data. \cite{Verbraeken2020MLSurvey}
+    workers are idle or otherwise computing on stale data.
+    \cite{Verbraeken2020MLSurvey}
     \item Each time the parameter server calculates a new global parameters,
     these parameters must be broadcast to each worker simultaneously, consuming
     vast network bandwidth. \cite{LI2014ParameterServers}
@@ -70,8 +78,8 @@ there are 3 key drawbacks:
 As has already been addressed frequently models can get so large that they can
 no longer feasibly be held within one worker. Therefore there are also
 variations with respect to how much of the model each worker operates on: 1) The
-model is segmented and split between worker. This is known as \textit{Model
-Parallelism} 2) The data is split between the workers which have their own full
+model is segmented and split between worker. This is known as \textit{Model Parallelism} 
+2) The data is split between the workers which have their own full
 local models, but are synced with each other at periodic intervals. This is
 known as \textit{Data Parallelism} \cite{Xing2015Petuum} Though model
 parallelism shows promise it has its own set of drawbacks:
@@ -90,15 +98,15 @@ parallelism shows promise it has its own set of drawbacks:
 
 \subsection{Aims}
 My solution to address these issues raised above is to introduce a new model for
-Distributed Machine Learning: \textit{Distiller}. Distiller is a Ring
-Topological, Model Parallel Distributed Machine Learning framework focusing on
-optimising Distributed Stochastic Gradient Descent.
+Distributed Machine Learning: \textit{RingTMP}. RingTMP (Ring Topological Model
+Parallel) is a Ring Topological Model Parallel Distributed Machine Learning
+framework focusing on optimising Distributed Stochastic Gradient Descent.
 \par
 
 Each of the limitations I have described before I aim to address with the
-Distiller Framework:
+RingTMP Framework:
 \begin{itemize}
-    \item Distiller aims to reduce the time workers are idle to lower than the
+    \item RingTMP aims to reduce the time workers are idle to lower than the
     parameter server model. This will manifest itself by distributing the work
     between workers more proportionally, This means each computers resource is
     used more efficiently and training should be faster per iteration.
@@ -119,12 +127,46 @@ Distiller Framework:
     communication with adjacent nodes.
 \end{itemize}
 
+As I have already alluded to this will take the form of a framework that will
+operate on multiple machines which henceforth I will describe as nodes. Each
+nodes contains a series of adjacent of Deep Neural Network (DNN) layers. The
+nodes (as before described) are arranged in a ring. In the clockwise direction
+matrix multiplication is performed and in the anticlockwise direction gradient
+descent through backpropagation is performed. There are two kinds of nodes
+master nodes and worker nodes. Master nodes have direct access to the training
+data being input into the Neural Network, whilst also performing operations on
+the data flowing through the neural network. There is only one master node per
+network and as many worker nodes as desired. 
+\par
+
+Each node has a 3 part structure.
+\begin{itemize}
+    \item The Parameter Store. This contains the parameters for this section of
+    the model. For the majority of the time its only accessed by elements within
+    the node.
+    \item The Multiplication Module. Reads the parameter server weights and
+    multiplies them with the matrix given by the previous node.
+    \item The Backpropagation Module. Takes the last layer of the previous node
+    and the parameters in the store. It uses them to calculate the new
+    parameters they are then placed in the Parameter Store.
+\end{itemize}
+
+The master node has the addition of being connected to the training dataset. A
+master node takes an single training example and its solution. It then send the
+example around the ring until it arrives back at the master node at which point
+the master node evaluates the decision the Neural Network has come to and begins
+the backpropagation progress along the way it came, in order to improve the
+model.
 
 
 
+% produce diagram of node structure
 
+% produce diagram of network structure
 
-  
+% talk about good qualities of a distributed neural network system and keys aims based upon that
+
+% talk about issue of communication vs computation
 
 
 % \newline
@@ -133,14 +175,6 @@ Distiller Framework:
 % workers then sends the parameter server the new gradients they have calculated. The
 % parameter server aggregates the responses from the workers and then applies it
 % to the global weights in the parameter server.
-
-
-
-
-
-
-
-
 
 
 \subsection{Problem}

@@ -131,33 +131,33 @@ My aims more specifically for this project are to:
     standard parameter server, where each worker hold the whole model.
 \end{itemize}
 
-\subsection{Related Work}
-In order to understand the benefit this system will have over other Distributed
-Machine Learning Systems, one must first understand their different variations.
-While also understanding the benefits and drawbacks.
-\par
+% \subsection{Related Work}
+% In order to understand the benefit this system will have over other Distributed
+% Machine Learning Systems, one must first understand their different variations.
+% While also understanding the benefits and drawbacks.
+% \par
 
-There are two main variations with respect to the operation of the workers in
-parameter server model: 1) The parameter server has to wait for the last worker
-to be finished before it can calculate the new global parameters. much like the
-MapReduce algorithm. \cite{googlemapreduce2008} This is known as \textit{BSP}
-which stands for Bulk Synchronous Parallel Design.  2) The workers operate
-asynchronously constantly updating the parameter server, the parameter server
-calculating new global parameters periodically. \cite{Qirong2013SSP} This is known as
-\textit{ASP} which stands for Asynchronous Parallel Design. Whilst this
-method is the most common method of machine learning with many benefits, there
-are 3 key drawbacks:
-\begin{itemize}
-    \item The model sacrifices efficiency in either time or computation. Either
-    it must wait for all workers to be done each round, or redundant
-    computations must be made. \cite{Chilimbi2014ADAM}
-    \item when the parameter server is calculating the new global parameters the
-    workers are idle or otherwise computing on stale data. 
-    \cite{Verbraeken2020MLSurvey}
-    \item Each time the parameter server calculates a new global parameters,
-    these parameters must be broadcast to each worker simultaneously, consuming
-    vast network bandwidth. \cite{LI2014ParameterServers}
-\end{itemize}
+% There are two main variations with respect to the operation of the workers in
+% parameter server model: 1) The parameter server has to wait for the last worker
+% to be finished before it can calculate the new global parameters. much like the
+% MapReduce algorithm. \cite{googlemapreduce2008} This is known as \textit{BSP}
+% which stands for Bulk Synchronous Parallel Design.  2) The workers operate
+% asynchronously constantly updating the parameter server, the parameter server
+% calculating new global parameters periodically. \cite{Qirong2013SSP} This is known as
+% \textit{ASP} which stands for Asynchronous Parallel Design. Whilst this
+% method is the most common method of machine learning with many benefits, there
+% are 3 key drawbacks:
+% \begin{itemize}
+%     \item The model sacrifices efficiency in either time or computation. Either
+%     it must wait for all workers to be done each round, or redundant
+%     computations must be made. \cite{Chilimbi2014ADAM}
+%     \item when the parameter server is calculating the new global parameters the
+%     workers are idle or otherwise computing on stale data. 
+%     \cite{Verbraeken2020MLSurvey}
+%     \item Each time the parameter server calculates a new global parameters,
+%     these parameters must be broadcast to each worker simultaneously, consuming
+%     vast network bandwidth. \cite{LI2014ParameterServers}
+% \end{itemize}
 
 % As has already been addressed frequently models can get so large that they can
 % no longer feasibly be held within one worker. Therefore there are also
@@ -181,9 +181,9 @@ are 3 key drawbacks:
 % \end{itemize}
 \par
 
-Taking all of these into consideration, I believe that I could design a system
-that avoids these limitations, therefore creating a efficient, scalable and
-resilient system.
+% Taking all of these into consideration, I believe that I could design a system
+% that avoids these limitations, therefore creating a efficient, scalable and
+% resilient system.
 
 % As I have already alluded to this will take the form of a framework that will
 % operate on multiple machines which henceforth I will describe as nodes. Each

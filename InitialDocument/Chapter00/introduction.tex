@@ -81,8 +81,24 @@ However this model is not perfect and has 3 considerable drawbacks:
     severely impacting performance. \cite{LI2014ParameterServers}
     \item Many parameter server models require the whole model to be replicated
     within each node. \cite{jia2018BeyondData} This means that very large models
-    simply cannot run in machines with low system memory.  
+    simply cannot run on machines with low system memory.  
 \end{itemize}
+
+% need a small word on low power devices here
+In previous years distributed machine learning algorithms have been focused on
+high powered servers with large bandwidth connections. More recently there has
+been more focus on on-device machine learning. Work has also been done in
+distributed machine learning at the edge of internet networks. Mobile and
+Internet of Thing (IoT) devices utilising their power to train networks locally,
+rather than on a centralised server. This has been driven by the amount of data
+being generated on devices, its no longer viable for it all to be sent to a
+central server. \cite{Chaing2016FogIoT} This introduces its own problems, while
+the total computation is potentially limitless, the bandwidth between the
+devices is small. Not to mention the devices have limited storage, memory and
+computational power. The distributed algorithms in this field have been adapted
+from the ones used in centralised distributed machine learning servers. It
+remains to be seen how well suited these are for low power distributed
+computing.
 
 
 \subsection{Aims}
@@ -90,11 +106,12 @@ My solution to address these issues raised above and a number of others is to
 introduce a new model for Distributed Machine Learning: \textit{RingTMP}.
 RingTMP (Ring Topological Model Parallel) is a Ring Topological Model Parallel
 Distributed Machine Learning framework focusing on optimising Distributed
-Stochastic Gradient Descent. This is a novel design drawing in inspiration much
-research but particularly from the STRADS and Distbelief machine learning
-frameworks, \cite{kim2016STRADS,Dean2012Distbelief} in addition to identifying
-issues with existing systems and addressing them. These are the benefits my
-system will have over existing parameter server architecture:
+Stochastic Gradient Descent in low power hardware. This is a novel design
+drawing in inspiration much research but particularly from the STRADS and
+Distbelief machine learning frameworks, \cite{kim2016STRADS,Dean2012Distbelief}
+in addition to identifying issues with existing systems and addressing them.
+These are the benefits my system will have over existing parameter server
+architecture:
 \begin{itemize}
     % \item RingTMP aims to reduce the time workers are idle to lower than the
     % parameter server model. This will manifest itself by distributing the work

@@ -4,53 +4,70 @@
 %-----------------------------------------------------------------------------------------
 
 \subsection{Motivation and Context}
+
 Machine Learning algorithms have become ubiquitous in modern life. Powering
 social media feeds, email spam filters, advertising personalisation and even
 identifying breast cancer more accurately than doctors. \cite{Mammograms2020} To
-train these Machine Learning algorithms large datasets are needed. The more data
-available, the more nuanced and accurate model will be able to be produced
-
-The more
-nuanced and complex the problem being solved, the more data is necessary. As the
-scale of problems we are trying to solve dramatically increase, the scale of
-datasets are too. Services like the Internet Archive as of 2020 contain
-over 70PB in its database. Labeled datasets such as AViD have 467k videos and
-887 action classes, which is in the order of terabytes.
-\cite{piergiovanni2020avid} 
-Whilst the data grows the as does the Machine Learning models in order to to
-obtain ever more accurate results. Since 2008 Google has been processing more
-20PB of data a day using their Machine Learning MapReduce algorithm.
-\cite{googlemapreduce2008}.More recently the cutting edge GTP-3 Natural Language Processing
-model contains 175 Billion parameters. \cite{fewshowlearners2020gpt} And efforts
-are being made to create models with trillions of parameters.
-\cite{rajbhandari2020zero}
+train these Machine Learning algorithms large datasets are needed. The greater
+the available data, the more nuanced and accurate the produced model will be.
 \par
 
-Deriving meaning from these vast quantities of data to obtaining nuanced
+As the scale of problems we are trying to solve dramatically increases, the
+scale of datasets are too. Services like the Internet Archive as of 2020 contain
+over 70PB in it's database. Labeled datasets such as AViD have video data in the
+order of terabytes. \cite{piergiovanni2020avid} Since 2008 Google has been
+processing more 20PB of data a day using their Machine Learning MapReduce
+algorithm. \cite{googlemapreduce2008}. More recently the cutting edge GTP-3
+Natural Language Processing model contains 175 Billion parameters.
+\cite{fewshowlearners2020gpt} And efforts are being made to create models with
+trillions of parameters. \cite{rajbhandari2020zero} Both the size of the
+datasets and the size of the models are being pushed to their extremes.
+\par
+
+Deriving meaning from these vast quantities of data and obtaining nuanced
 insights from them is a difficult task. Not only because deeper insights into
 data require larger Machine Learning models. But because more data is needed to
-populate the parameters of these models. Both of these factors contribute to the
-need to distribute the computation of the model across multiple nodes otherwise
-known as Distributed Machine Learning. Distributed Machine Learning is often a
-pre-requisite for training models, now datasets and models are becoming so
-large. \cite{LI2014ParameterServers} Scalability is another challenge a
-Distributed Machine Learning system must face. As more machines are added to a
-system the communication overhead increases. Communication bandwidth is a
-limited resource which can produce bottlenecks when the network becomes
-saturated. With more independent systems working in conjunction and training
-that costs extensive time and expenses, resiliency has also become a important
-factor in Distributed Machine Learning. When a Machine fails to work a
-Distributed Machine Learning System must have contingency plans. These plans can
-ensure the minimum amount of model data is lost, and that the machine learning
-can continue swiftly after a major error.
+populate the parameters of these models accurately. Both of these factors
+contribute to the need to distribute the computation of the model and sometimes
+the model itself across multiple nodes otherwise known as Distributed Machine
+Learning. Distributed Machine Learning is often a pre-requisite for training
+models, now datasets and models are becoming so large and no single machine is
+powerful enough to process these datasets in a viable amount of time.
+\cite{LI2014ParameterServers}
 \par
 
-The popular current solution is to have multiple machines compute the model
-together, communicating the improvements that they've made to each other. The
-model operates on a worker and parameter server paradigm. The server holds the
-global model including all the parameters. Workers then use the model in
-conjunction with the training data split between them to update the global model
-in the parameter server. \cite{LI2014ParameterServers}
+There are many challenges a Distributed Machine Learning system can introduce
+such as scalability. As more machines are added to a system the communication
+overhead increases. Communication bandwidth is a limited resource which can
+produce bottlenecks when the network becomes saturated. The goal of a good
+Distributed Machine Learning System is to have the number of nodes be as
+proportional to rate of model training as possible.
+\par
+
+Resiliency is another factor to consider. With more independent systems working
+in conjunction and training that costs extensive time and expenses, its
+important that the training of a model doesn't fail. When a Machine fails to
+work a Distributed Machine Learning System must have contingency plans. These
+plans can ensure the minimum amount of model data is lost, and that the machine
+learning can continue swiftly after a major error.
+\par
+
+% The popular current solution is to have multiple machines compute the model
+% together, communicating the improvements that they've made to each other. The
+% model operates on a worker and parameter server paradigm. The server holds the
+% global model including all the parameters. Workers then use the model in
+% conjunction with the training data split between them to update the global model
+% in the parameter server. \cite{LI2014ParameterServers}
+% \par
+
+The popular current solution is to use a parameter server model. In brief the
+paradigm is made of two different types of components. The parameter server
+holds the global parameters of the model. Workers are given the model
+parameters by the parameter server. The workers then perform an iteration of
+whichever machine learning algorithm they are performing, modifying the
+parameters. Then the modified parameters are sent to the parameter server
+where they are aggregated, the global model parameters are updated and the
+cycle continues until the model has converged on an answer.
 \par
 
 % need to mention a little bit about the issues with the parameter server model
@@ -179,7 +196,6 @@ My aims more specifically for this project are to:
 %     needed. However this in turn require more computational overhead and
 %     communication and reduces iteration throughput. \cite{kim2016STRADS}
 % \end{itemize}
-\par
 
 % Taking all of these into consideration, I believe that I could design a system
 % that avoids these limitations, therefore creating a efficient, scalable and

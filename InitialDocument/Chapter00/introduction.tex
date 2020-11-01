@@ -159,26 +159,26 @@ are 3 key drawbacks:
     vast network bandwidth. \cite{LI2014ParameterServers}
 \end{itemize}
 
-As has already been addressed frequently models can get so large that they can
-no longer feasibly be held within one worker. Therefore there are also
-variations with respect to how much of the model each worker operates on: 1) The
-model is segmented and split between worker. This is known as \textit{Model
-Parallelism} 2) The data is split between the workers which have their own full
-local models, but are synced with each other at periodic intervals. This is
-known as \textit{Data Parallelism} \cite{Xing2015Petuum} Though model
-parallelism shows promise it has its own set of drawbacks:
-\begin{itemize}
-    \item Often in model parallelism nodes do not communicate with each other,
-    this makes it performing algorithms such as Stochastic Gradient Decent
-    difficult as clusters of nodes are isolated.
-    \item some model parameters take more algorithmic iterations to converge
-    than others, so that they converges at the same rate, this means that some
-    nodes may be idle, not spreading the load equally or efficiently.
-    \cite{Dean2012Distbelief}
-    \item Because some parameters converge at different rates, a scheduler is
-    needed. However this in turn require more computational overhead and
-    communication and reduces iteration throughput. \cite{kim2016STRADS}
-\end{itemize}
+% As has already been addressed frequently models can get so large that they can
+% no longer feasibly be held within one worker. Therefore there are also
+% variations with respect to how much of the model each worker operates on: 1) The
+% model is segmented and split between worker. This is known as \textit{Model
+% Parallelism} 2) The data is split between the workers which have their own full
+% local models, but are synced with each other at periodic intervals. This is
+% known as \textit{Data Parallelism} \cite{Xing2015Petuum} Though model
+% parallelism shows promise it has its own set of drawbacks:
+% \begin{itemize}
+%     \item Often in model parallelism nodes do not communicate with each other,
+%     this makes it performing algorithms such as Stochastic Gradient Decent
+%     difficult as clusters of nodes are isolated.
+%     \item some model parameters take more algorithmic iterations to converge
+%     than others, so that they converges at the same rate, this means that some
+%     nodes may be idle, not spreading the load equally or efficiently.
+%     \cite{Dean2012Distbelief}
+%     \item Because some parameters converge at different rates, a scheduler is
+%     needed. However this in turn require more computational overhead and
+%     communication and reduces iteration throughput. \cite{kim2016STRADS}
+% \end{itemize}
 \par
 
 Taking all of these into consideration, I believe that I could design a system

@@ -78,13 +78,52 @@ parallelism the whole set of training data is passed through each node. While in
 Data Parallelism its common for each node to hold the whole machine learning
 model.
 
-The key advantage of model parallelism is that models can be far larger as they
+The key advantage of Model Parallelism is that models can be far larger as they
 no longer have to sit on one machine. However this one great advantage comes
 with some disadvantages. Some parameters may take more time to converge than
 others, this means that at times some nodes may be idle, so the spread of
-computation was not equal or efficient. \cite{Dean2012Distbelief} Because some
+computation is not equal or efficient. \cite{Dean2012Distbelief} Because some
 parameters converge at different rates a scheduler can be used. However this
 requires more computational overhead and communication and reduces iteration
 throughput. \cite{kim2016STRADS}
 
+Data Parallelism has the benefit that data throughput can be very large, making
+processing using this method very fast. However with more nodes the
+communication overhead increases as the nodes must communicate the changes in
+their model parameters to each other. [cite someone here] The nodes can
+communicate with each other synchronously, but this means the computation is
+only as fast as the slowest node. If the nodes communicate with each other
+asynchronously then some of the calculations will be made on out of date model
+parameters so training examples may be needlessly wasted.
+
 \subsection{Low Power Hardware, IoT and Edge Computing}
+
+% While historically much of the focus of distributed learning has been to
+% increase computational power in order to train bigger and more accurate models,
+% more recently there has been research into the utility of the distributed aspect
+% of Distributed Machine Learning. With the rise of Internet of Things (IoT)
+% devices and the established ubiquity of smart phones more data than ever is
+% being produced. Soon this data generation with exceed the capacity of the
+% internet, and that over 90\% of data will be stored and processed locally.
+% \cite{Chaing2016FogIoT} This will mean that data processed through machine
+% learning algorithms may also have to be processed locally. This is an issue for
+% machine learning as we know it, as it would no longer be viable to send all the
+% data to one location to process it. Moreover local machines have magnitudes less
+% power than centralised servers. However we still want to train machine learning
+% algorithms as fast as we are able. But now it is also important that they are
+% efficient, as they will be running on low power potentially battery powered
+% devices.
+
+Historically Machine learning algorithms have been focused on high model
+accuracy through large models and vast amounts of training data, energy
+consumption and efficiency has rarely been taken into consideration. However
+with the rise of Internet of Things (IoT) devices and the established ubiquity
+of smart phones more data than ever is being produced. Soon this data generation
+with exceed the capacity of the internet, and experts estimate that over 90\% of
+data will be stored and processed locally. \cite{Chaing2016FogIoT} By extension
+this means machine learning algorithms will have to be performed locally too.
+This introduces some challenging issues. Modern machine learning algorithms
+require vast computational power and large amounts of data. Local devices don't
+have the capacity to hold large data sets or the power to compute machine
+learning models in a viable amount of time, while many of them are also battery
+powered so power consumption becomes another issue.

@@ -66,6 +66,7 @@ googlemapreduce2008} culminating in 2014 when the parameter server as it is
 known today \cite{LI2014ParameterServers} was produced. This parameter server is
 highly sophisticated and flexible accommodating the difference in hardware
 components while spending more on computation and less time waiting.
+% should I write more about this?
 
 \subsection{Model and Data Parallelism}
 When creating distributed machine learning models there two different methods
@@ -98,22 +99,6 @@ parameters so training examples may be needlessly wasted.
 
 \subsection{Low Power Hardware, IoT and Edge Computing}
 
-% While historically much of the focus of distributed learning has been to
-% increase computational power in order to train bigger and more accurate models,
-% more recently there has been research into the utility of the distributed aspect
-% of Distributed Machine Learning. With the rise of Internet of Things (IoT)
-% devices and the established ubiquity of smart phones more data than ever is
-% being produced. Soon this data generation with exceed the capacity of the
-% internet, and that over 90\% of data will be stored and processed locally.
-% \cite{Chaing2016FogIoT} This will mean that data processed through machine
-% learning algorithms may also have to be processed locally. This is an issue for
-% machine learning as we know it, as it would no longer be viable to send all the
-% data to one location to process it. Moreover local machines have magnitudes less
-% power than centralised servers. However we still want to train machine learning
-% algorithms as fast as we are able. But now it is also important that they are
-% efficient, as they will be running on low power potentially battery powered
-% devices.
-
 Historically Machine learning algorithms have been focused on high model
 accuracy through large models and vast amounts of training data, energy
 consumption and efficiency has rarely been taken into consideration. However
@@ -127,3 +112,21 @@ require vast computational power and large amounts of data. Local devices don't
 have the capacity to hold large data sets or the power to compute machine
 learning models in a viable amount of time, while many of them are also battery
 powered so power consumption becomes another issue.
+
+% modern solutions for edge computing 
+A solution to this is to massively distribute the model over multiple
+decentralised nodes. The level of distribution is even greater than that of
+centralised compute cluster models. In this solution each device computes a
+model using its own data, infrequently (due to network constraints) the model is
+shared with a coordination server, which will then distribute the changes across
+all nodes in the network. \cite{wang2018EdgeLearning} While this method is
+inefficient as the infrequent communications mean that many nodes may do much of
+the same work, and the merging of the global model infrequently may cause loss
+of information. It still produces a model which converges in a relitivly few
+rounds of communication. \cite{konevcny2016federated}
+
+
+% low power solutions
+
+
+\subsection{The Communication Issue}

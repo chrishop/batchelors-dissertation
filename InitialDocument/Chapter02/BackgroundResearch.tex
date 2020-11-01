@@ -68,6 +68,8 @@ highly sophisticated and flexible accommodating the difference in hardware
 components while spending more on computation and less time waiting.
 % should I write more about this?
 
+\subsection{The Communication Issue}
+
 \subsection{Model and Data Parallelism}
 When creating distributed machine learning models there two different methods
 for distributing training, Model Parallelism and data parallelism. These two
@@ -97,7 +99,7 @@ only as fast as the slowest node. If the nodes communicate with each other
 asynchronously then some of the calculations will be made on out of date model
 parameters so training examples may be needlessly wasted.
 
-\subsection{Low Power Hardware, IoT and Edge Computing}
+\subsection{Low Power Hardware, IoT and Mobile Computation}
 
 Historically Machine learning algorithms have been focused on high model
 accuracy through large models and vast amounts of training data, energy
@@ -116,17 +118,36 @@ powered so power consumption becomes another issue.
 % modern solutions for edge computing 
 A solution to this is to massively distribute the model over multiple
 decentralised nodes. The level of distribution is even greater than that of
-centralised compute cluster models. In this solution each device computes a
-model using its own data, infrequently (due to network constraints) the model is
+centralised compute clusters. In this solution each device computes a model
+using its own local data, infrequently (due to network constraints) the model is
 shared with a coordination server, which will then distribute the changes across
 all nodes in the network. \cite{wang2018EdgeLearning} While this method is
 inefficient as the infrequent communications mean that many nodes may do much of
-the same work, and the merging of the global model infrequently may cause loss
-of information. It still produces a model which converges in a relitivly few
-rounds of communication. \cite{konevcny2016federated}
-
+the same work, and the merging of local models into a global one infrequently
+may cause loss of information. It still produces a model which converges in a
+relatively few rounds of communication. \cite{konevcny2016federated}
 
 % low power solutions
+Efforts have been made to reduce device specification needed for machine learning
+algorithms to operate. One of these is Data stream mining. The idea is that a
+device can stream the analytics data directly into the model rather than storing
+the data in an intermediate place. \cite{garciaMartin2019MLEnergy} This means
+after the data has been read by the model it is lost. But that also means that
+no data needs to be stored, meaning resources are not spent reading and writing
+to storage. This has an application in mobile devices, as they produce data at a
+low rate through user interaction. Therefore the model can be build in real time
+as the actions occur. The data produced on the mobile itself may not produce
+enough data to effectively train the model, but via communication with other
+users distributed over the network the model can converge.
 
+% there has not been much work done in low power distributed setting
+From the research available there seems to be research into distributed
+computing from local devices and investigation in to power measurement
+\cite{wang2018EdgeLearning, konevcny2016federated} and reduction of machine
+learning algorithms on local devices. \cite{garciaMartin2019MLEnergy} But there
+is a distinct lack of research into efficiency of \textit{distributed algorithms} from
+the perspective of efficiency and power consumption on local devices. Having a
+more power efficient distributed machine learning algorithm, even if the
+optimisation was marginal on each device, would have an enormous effect on the
+output of the system, as many devices are connected.
 
-\subsection{The Communication Issue}

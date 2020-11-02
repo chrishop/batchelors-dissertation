@@ -5,11 +5,11 @@
 
 \subsection{Motivation and Context}
 
-Machine Learning algorithms have become ubiquitous in modern life. Powering
-social media feeds, email spam filters, advertising personalisation and even
-identifying breast cancer more accurately than doctors. \cite{Mammograms2020} To
-train these Machine Learning algorithms large datasets are needed. The greater
-the available data, the more nuanced and accurate the produced model will be.
+Machine Learning algorithms have become ubiquitous in modern life. They power
+social media feeds, advertising personalisation and even identifying breast
+cancer more accurately than doctors. \cite{Mammograms2020} To train these
+Machine Learning algorithms large datasets are needed. The greater the available
+data, the more nuanced and accurate the produced model will be.
 \par
 
 As the scale of problems we are trying to solve dramatically increases, the
@@ -29,8 +29,8 @@ insights from them is a difficult task. Not only because deeper insights into
 data require larger Machine Learning models. But because more data is needed to
 populate the parameters of these models accurately. Both of these factors
 contribute to the need to distribute the computation of the model and sometimes
-the model itself across multiple nodes otherwise known as Distributed Machine
-Learning. Distributed machine Learning is often a pre-requisite for training
+the model itself across multiple nodes otherwise known as distributed machine
+learning. Distributed machine learning is often a pre-requisite for training
 models, now that datasets and models are becoming so large and no single machine
 is powerful enough to process these datasets in a viable amount of time.
 \cite{LI2014ParameterServers}
@@ -40,7 +40,7 @@ There are many challenges a distributed machine learning system can introduce,
 such as scalability. As more machines are added to a system the communication
 overhead increases. Communication bandwidth is a limited resource which can
 produce bottlenecks when the network becomes saturated. The goal of a good
-distributed machine learning System is to have the number of nodes be as
+distributed machine learning system is to have the number of nodes be as
 directly proportional to rate of model training as possible.
 \par
 
@@ -124,10 +124,10 @@ DistBelief machine learning frameworks. \cite{kim2016STRADS,Dean2012Distbelief}
 
 As I have already alluded to this will take the form of a framework that will
 operate on multiple machines which henceforth I will describe as nodes. Each
-nodes contains a series of adjacent of Deep Neural Network (DNN) layers. The
+nodes contains a series of adjacent Deep Neural Network (DNN) layers. The
 nodes are arranged in a ring. In the clockwise direction matrix multiplication
 is performed and in the anticlockwise direction gradient descent through
-backpropagation is performed. There are two kinds of nodes master nodes and
+backpropagation is performed. There are two kinds of nodes, master nodes and
 worker nodes. Master nodes have direct access to the training data being input
 into the Neural Network, whilst also performing operations on the data flowing
 through the neural network. Worker nodes simply perform matrix multiplication
@@ -158,13 +158,13 @@ architectures:
     \item Workers will have less idle time, because the work will be distributed
     more proportionally between nodes. And computing resources will be used more
     efficiently.
-    \item There will less communication across nodes as the parameter server so
-    not need to send their local weights to the global parameter server each
-    iteration.
+    \item There will be less communication across nodes than the parameter
+    server model as they will not need to send their local weights to the
+    parameter server each iteration.
     \item There will also be a potential for larger communication bandwidth, as
-    with RingTMP ring topology only adjacent nodes need to communicate. While
-    with a parameter Server model every worker needs to communicate with the
-    Parameter server at the end of each iteration, which can lead to
+    with RingTMP's ring topology only adjacent nodes need to communicate. While
+    with a parameter server model every worker needs to communicate with the
+    parameter server at the end of each iteration, which can lead to
     bottlenecking.
     \item The nodes require no scheduling as in some model parallel systems.
     Instead scheduling is managed in a decentralised manner via communication
@@ -174,7 +174,7 @@ architectures:
 
 My aims more specifically for this project are to:
 \begin{itemize}
-    \item Create a prototype RingTMP framework and run it multiple machines
+    \item Create a prototype RingTMP framework and run it on multiple machines
     simultaneously.
     \item Create a parameter server model framework using the same tools that
     will run over multiple machines simultaneously.
@@ -182,7 +182,7 @@ My aims more specifically for this project are to:
     the parameter server model.
     \item Demonstrate that RingTMP takes less overall power to run in comparison
     to the parameter server.
-    \item Display that RingTMP is at least as scalable than a generic parameter
+    \item Demonstrate that RingTMP is at least as scalable than a generic parameter
     server.
     \item Show that this solution can be as resilient as a parameter server
     model distributed neural network.

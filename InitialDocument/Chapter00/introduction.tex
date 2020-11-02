@@ -102,6 +102,18 @@ computing.
 
 
 \subsection{Aims}
+
+\begin{figure}[h]
+    \includegraphics[width=0.3\textwidth]{ExampleNetwork}
+    \includegraphics[width=0.3\textwidth]{masternode}
+    \includegraphics[width=0.3\textwidth]{SingleNode}
+    \caption{
+            Left: An example network of RingTMP. The green node being the master node and the blue nodes being the worker nodes.
+            Centre: The architecture of the master node.
+            Right: The architecture of the worker node.
+        }
+\end{figure}
+
 My solution to address these issues raised above and a number of others is to
 introduce a new model for Distributed Machine Learning: \textit{RingTMP}.
 RingTMP (Ring Topological Model Parallel) is a Ring Topological Model Parallel
@@ -156,8 +168,7 @@ My aims more specifically for this project are to:
     that over multiple machines simultaneously.
     \item Show that RingTMP reduces the time workers are idle in comparison to
     the parameter server model.
-    \item Exhibit that per iteration RingTMP makes more progress than the parameter
-    server.
+    \item RingTMP takes overall less power to run in com
     \item Display that RingTMP is more scalable than a generic parameter server.
     \item Show that this solution can be as resilient as a parameter server
     model distributed neural network.

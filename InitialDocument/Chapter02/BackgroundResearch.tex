@@ -111,6 +111,14 @@ components while spending more on computation and less time waiting.
 
 
 \subsection{Model and Data Parallelism}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4\textwidth]{DataParallel}
+    \includegraphics[width=0.4\textwidth]{ModelParallel}
+    \caption{Left: Data Parallelism. Right: Model Parallelism. In both diagrams
+        the green lines indicate local parameters being sent to the parameter
+        server and red lines indicate parameters being sent to the worker nodes.}
+\end{figure}
 When creating distributed machine learning models there two different methods
 for distributing training, Model Parallelism and data parallelism. These two
 methods are not mutually exclusive and can be used in conjunction with one

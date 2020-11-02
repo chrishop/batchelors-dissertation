@@ -48,8 +48,8 @@ function.
 \subsection{The Communication Issue}
 Distributed Neural Networks must communicate with each other in some way in
 order to work together. This needs to be formalised to be able to measure the
-efficiency of our machine learning system. This line of reasoning already
-appears in these papers \cite{konevcny2016federated ,Ma2017DistributedOptimisation}
+efficiency of our machine learning system. Parts of this reasoning already
+appears in these papers too. \cite{konevcny2016federated ,Ma2017DistributedOptimisation}
 
 If we consider how a neural network operates if we were to run it on a single
 node, we could characterise its computation as such:
@@ -65,19 +65,20 @@ distributed setting this equation changes to this:
 \begin{equation}
     TIME = I_A (\epsilon) \times (c + T_A)  
 \end{equation}
-In this equation we have the added variable \(c\) this represents time taken for
-communication per iteration. In a distributed setting this will always remain
-above a non trivial amount of data. Unfortunately The majority of Machine
-Learning algorithms use a stochastic method which means a very large number of
-iterations \((I_A(\epsilon))\) of very fast iterations (small \(T_A\)). You can
-see that no matter how small \(c\) is there will be a significant impact of the
-time taken. In fact with a naive approach of communication each iteration almost
-certainly \(c > T_A\).
+In this equation we have the added variable \(c\), this represents time taken
+for communication per iteration. In a distributed setting this will always
+remain above a non trivial amount of data. Unfortunately The majority of machine
+learning algorithms use a stochastic method which means a very large number of
+iterations \((I_A(\epsilon))\) that take a short amount of time (small \(T_A\)).
+You can see that no matter how small \(c\) is there will be a significant impact
+of the time taken. In fact with a naive approach of communication each iteration
+almost certainly \(c > T_A\).
 
 However this view doesn't take into account the possibility that communication
 could happen at the same time as an iteration. For example imagine a pipeline of
 nodes where each nodes performs an iteration but can communicate its previous
-iteration at the same time. Then the time taken could be described like so:
+iteration to the next node at the same time. Then the time taken could be
+described like so:
 \begin{equation}
     TIME = I_A (\epsilon) \times max(c, T_A)
 \end{equation}
@@ -94,8 +95,8 @@ Dirichlet Allocation (LDA), which identifies the affiliations words have to
 certain topics.  While the paper focused on parallelising the algorithm and
 running them over multiple artificially isolated cores the results showed that
 distributed machine learning could have scalability and didn’t impact the rate
-of convergence of the model.  This was followed by a paper by Jia et al.
-\cite{ParallelTopicModels} which produced much faster results than its
+of convergence of the model significantly. This was followed by a paper by Jia
+et al. \cite{ParallelTopicModels} which produced much faster results than its
 predecessors by using memcache layer in every machine, every machine would
 message every other machine with updates of its local parameters to create an
 approximate global state, it was mentioned in passing that arranging the nodes
@@ -106,7 +107,6 @@ googlemapreduce2008} culminating in 2014 when the parameter server as it is
 known today \cite{LI2014ParameterServers} was produced. This parameter server is
 highly sophisticated and flexible accommodating the difference in hardware
 components while spending more on computation and less time waiting.
-% should I write more about this?
 
 
 
@@ -122,26 +122,28 @@ components while spending more on computation and less time waiting.
 When creating distributed machine learning models there two different methods
 for distributing training, Model Parallelism and data parallelism. These two
 methods are not mutually exclusive and can be used in conjunction with one
-another, such as in Distbelief. \cite{Dean2012Distbelief}. Model Parallelism is
+another, such as in DistBelief. \cite{Dean2012Distbelief}. Model Parallelism is
 when model parameters are split between the nodes. As Data Parallelism is when
 the data is split between the nodes. \cite{Xing2015Petuum} Often with model
 parallelism the whole set of training data is passed through each node. While in
 Data Parallelism its common for each node to hold the whole machine learning
 model.
 
-The key advantage of Model Parallelism is that models can be far larger as they
-no longer have to sit on one machine. However this one great advantage comes
-with some disadvantages. Some parameters may take more time to converge than
-others, this means that at times some nodes may be idle, so the spread of
-computation is not equal or efficient. \cite{Dean2012Distbelief} Because some
-parameters converge at different rates a scheduler can be used. However this
-requires more computational overhead and communication and reduces iteration
-throughput. \cite{kim2016STRADS}
+The key advantage of Model Parallelism is that machine learning models can be
+far larger as they no longer have to sit on one machine. However this one great
+advantage comes with some disadvantages. Some parameters may take more time to
+converge than others, this means that at times some nodes may be idle while
+others are still converging, so the spread of computation is not equal or
+efficient. \cite{Dean2012Distbelief} Because some parameters converge at
+different rates a scheduler can be used, which does improve model convergence.
+However this requires more computational overhead and communication and reduces
+iteration throughput.
+\cite{kim2016STRADS}
 
 Data Parallelism has the benefit that data throughput can be very large, making
 processing using this method very fast. However with more nodes the
 communication overhead increases as the nodes must communicate the changes in
-their model parameters to each other. [cite someone here] The nodes can
+their model parameters to each other. \cite{elgabli2020gadmm} The nodes can
 communicate with each other synchronously, but this means the computation is
 only as fast as the slowest node. If the nodes communicate with each other
 asynchronously then some of the calculations will be made on out of date model
@@ -159,7 +161,7 @@ data will be stored and processed locally. \cite{Chaing2016FogIoT} By extension
 this means machine learning algorithms will have to be performed locally too.
 This introduces some challenging issues. Modern machine learning algorithms
 require vast computational power and large amounts of data. Local devices don't
-have the capacity to hold large data sets or the power to compute machine
+have the capacity to hold large data sets or the power to compute large machine
 learning models in a viable amount of time, while many of them are also battery
 powered so power consumption becomes another issue.
 
@@ -176,26 +178,28 @@ may cause loss of information. It still produces a model which converges in a
 relatively few rounds of communication. \cite{konevcny2016federated}
 
 % low power solutions
-Efforts have been made to reduce device specification needed for machine learning
-algorithms to operate. One of these is Data stream mining. The idea is that a
-device can stream the analytics data directly into the model rather than storing
-the data in an intermediate place. \cite{garciaMartin2019MLEnergy} This means
-after the data has been read by the model it is lost. But that also means that
-no data needs to be stored, meaning resources are not spent reading and writing
-to storage. This has an application in mobile devices, as they produce data at a
-low rate through user interaction. Therefore the model can be build in real time
-as the actions occur. The data produced on the mobile itself may not produce
-enough data to effectively train the model, but via communication with other
-users distributed over the network the model can converge.
+Efforts have been made in techniques to reduce the power memory and storage
+needed for machine learning algorithms to operate. One of these is Data stream
+mining. The idea is that a device can stream the analytics data directly into
+the model rather than storing the data in storage for later use.
+\cite{garciaMartin2019MLEnergy} This means after the data has been read by the
+model it is lost. But that also means that no data needs to be stored, meaning
+resources are not spent reading and writing to storage. This has an application
+in mobile devices, as they produce data at a low rate through user interaction.
+Therefore the model can be build in real time as actions occur. The data
+produced on the mobile itself may not be enough to effectively train the model,
+but via communication with other users distributed over the network the model
+can converge. \cite{konevcny2016federated}
 
 % there has not been much work done in low power distributed setting
 From the research available there seems to be research into distributed
-computing from local devices and investigation in to power measurement
-\cite{wang2018EdgeLearning, konevcny2016federated} and reduction of machine
-learning algorithms on local devices. \cite{garciaMartin2019MLEnergy} But there
-is a distinct lack of research into efficiency of \textit{distributed algorithms} from
-the perspective of efficiency and power consumption on local devices. Having a
-more power efficient distributed machine learning algorithm, even if the
-optimisation was marginal on each device, would have an enormous effect on the
-output of the system, as many devices are connected.
+computing on local devices, investigation in to power measurements of machine
+learning algorithms \cite{wang2018EdgeLearning, konevcny2016federated} and
+power reduction of machine learning algorithms on local devices.
+\cite{garciaMartin2019MLEnergy} But there is a distinct lack of research into
+efficiency of \textit{distributed algorithms} from the perspective of efficiency
+and power consumption on local devices. Having a more power efficient
+distributed machine learning algorithm, even if the optimisation was marginal on
+each device, would have an enormous effect on the output of the system, as many
+devices are connected.
 

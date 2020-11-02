@@ -16,9 +16,9 @@ As the scale of problems we are trying to solve dramatically increases, the
 scale of datasets are too. Services like the Internet Archive as of 2020 contain
 over 70PB in it's database. Labeled datasets such as AViD have video data in the
 order of terabytes. \cite{piergiovanni2020avid} Since 2008 Google has been
-processing more 20PB of data a day using their Machine Learning MapReduce
-algorithm. \cite{googlemapreduce2008}. More recently the cutting edge GTP-3
-Natural Language Processing model contains 175 Billion parameters.
+processing more 20PB of data a day using their MapReduce algorithm.
+\cite{googlemapreduce2008}. More recently the cutting edge GTP-3 Natural
+Language Processing model contains 175 Billion parameters.
 \cite{fewshowlearners2020gpt} And efforts are being made to create models with
 trillions of parameters. \cite{rajbhandari2020zero} Both the size of the
 datasets and the size of the models are being pushed to their extremes.
@@ -30,26 +30,26 @@ data require larger Machine Learning models. But because more data is needed to
 populate the parameters of these models accurately. Both of these factors
 contribute to the need to distribute the computation of the model and sometimes
 the model itself across multiple nodes otherwise known as Distributed Machine
-Learning. Distributed Machine Learning is often a pre-requisite for training
-models, now datasets and models are becoming so large and no single machine is
-powerful enough to process these datasets in a viable amount of time.
+Learning. Distributed machine Learning is often a pre-requisite for training
+models, now that datasets and models are becoming so large and no single machine
+is powerful enough to process these datasets in a viable amount of time.
 \cite{LI2014ParameterServers}
 \par
 
-There are many challenges a Distributed Machine Learning system can introduce
+There are many challenges a distributed machine learning system can introduce,
 such as scalability. As more machines are added to a system the communication
 overhead increases. Communication bandwidth is a limited resource which can
 produce bottlenecks when the network becomes saturated. The goal of a good
-Distributed Machine Learning System is to have the number of nodes be as
-proportional to rate of model training as possible.
+distributed machine learning System is to have the number of nodes be as
+directly proportional to rate of model training as possible.
 \par
 
-Resiliency is another factor to consider. With more independent systems working
-in conjunction and training that costs extensive time and expenses, its
-important that the training of a model doesn't fail. When a Machine fails to
-work a Distributed Machine Learning System must have contingency plans. These
-plans can ensure the minimum amount of model data is lost, and that the machine
-learning can continue swiftly after a major error.
+Resiliency is another factor to consider. With distinct machines working in
+conjunction with each other and training that is prohibitively expensive, its
+important that the training of a model doesn't fail. When a machine in the
+system fails to work a distributed machine learning system must have contingency
+plans. These plans can ensure the minimum amount of model data is lost, and that
+the machine learning can continue swiftly after a major error.
 \par
 
 % The popular current solution is to have multiple machines compute the model
@@ -61,13 +61,13 @@ learning can continue swiftly after a major error.
 % \par
 
 The popular current solution is to use a parameter server model. In brief the
-paradigm is made of two different types of components. The parameter server
-holds the global parameters of the model. Workers are given the model
-parameters by the parameter server. The workers then perform an iteration of
-whichever machine learning algorithm they are performing, modifying the
-parameters. Then the modified parameters are sent to the parameter server
-where they are aggregated, the global model parameters are updated and the
-cycle continues until the model has converged on an answer.
+paradigm is made of two different types of components. The parameter server and
+the workers. The parameter server holds the global parameters of the model.
+Workers are given the model parameters by the parameter server. The workers then
+perform an iteration of whichever machine learning algorithm they are
+performing, modifying the parameters. Then the modified parameters are sent to
+the parameter server where they are aggregated, the global model parameters are
+updated and the cycle continues until the model has converged on an answer.
 \par
 
 % need to mention a little bit about the issues with the parameter server model
@@ -88,17 +88,17 @@ However this model is not perfect and has 3 considerable drawbacks:
 In previous years distributed machine learning algorithms have been focused on
 high powered servers with large bandwidth connections. More recently there has
 been more focus on on-device machine learning. Work has also been done in
-distributed machine learning at the edge of internet networks. Mobile and
-Internet of Thing (IoT) devices utilising their power to train networks locally,
-rather than on a centralised server. This has been driven by the amount of data
-being generated on devices, its no longer viable for it all to be sent to a
-central server. \cite{Chaing2016FogIoT} This introduces its own problems, while
-the total computation is potentially limitless, the bandwidth between the
-devices is small. Not to mention the devices have limited storage, memory and
-computational power. The distributed algorithms in this field have been adapted
-from the ones used in centralised distributed machine learning servers. It
-remains to be seen how well suited these are for low power distributed
-computing.
+distributed machine learning at the edge of internet networks.
+\cite{konevcny2016federated, wang2018EdgeLearning} Mobile and Internet of Thing
+(IoT) devices utilising their power to train networks locally, rather than on a
+centralised server. This has been driven by the amount of data being generated
+on devices, its no longer viable for it all to be sent to a central server.
+\cite{Chaing2016FogIoT} This introduces its own problems, while the total
+computation is potentially limitless, the bandwidth between the devices is
+small. Not to mention the devices have limited storage, memory and computational
+power. The distributed algorithms in this field have been adapted from the ones
+used in centralised distributed machine learning servers. It remains to be seen
+how well suited these are for low power distributed computing.
 
 
 \subsection{Aims}
@@ -115,9 +115,9 @@ computing.
 \end{figure}
 
 My solution to address these issues raised above and a number of others is to
-introduce a new model for Distributed Machine Learning: \textit{RingTMP}.
+introduce a new model for distributed machine learning: \textit{RingTMP}.
 RingTMP (Ring Topological Model Parallel) is a Ring Topological Model Parallel
-Distributed Machine Learning framework focusing on optimising Distributed
+distributed machine learning framework focusing on optimising Distributed
 Stochastic Gradient Descent in low power hardware. This is a novel design
 drawing in inspiration much research but particularly from the STRADS and
 Distbelief machine learning frameworks, \cite{kim2016STRADS,Dean2012Distbelief}

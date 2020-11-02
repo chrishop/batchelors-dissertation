@@ -1,0 +1,128 @@
+Locally Distributed Machine Learning on Low Power Devices
+
+
+
+
+
+Machine Learning algorithms have become ubiquitous in modern life. Powering
+social media feeds, email spam filters, advertising personalisation and even
+identifying breast cancer more accurately than doctors. \cite{Mammograms2020} To
+train these Machine Learning algorithms large datasets are needed. The greater
+the available data, the more nuanced and accurate the produced model will be.
+\par
+
+As the scale of problems we are trying to solve dramatically increases, the
+scale of datasets are too. Services like the Internet Archive as of 2020 contain
+over 70PB in it's database. Labeled datasets such as AViD have video data in the
+order of terabytes. \cite{piergiovanni2020avid} Since 2008 Google has been
+processing more 20PB of data a day using their Machine Learning MapReduce
+algorithm. \cite{googlemapreduce2008}. More recently the cutting edge GTP-3
+Natural Language Processing model contains 175 Billion parameters.
+\cite{fewshowlearners2020gpt} And efforts are being made to create models with
+trillions of parameters. \cite{rajbhandari2020zero} Both the size of the
+datasets and the size of the models are being pushed to their extremes.
+\par
+
+Deriving meaning from these vast quantities of data and obtaining nuanced
+insights from them is a difficult task. Not only because deeper insights into
+data require larger Machine Learning models. But because more data is needed to
+populate the parameters of these models accurately. Both of these factors
+contribute to the need to distribute the computation of the model and sometimes
+the model itself across multiple nodes otherwise known as Distributed Machine
+Learning. Distributed Machine Learning is often a pre-requisite for training
+models, now datasets and models are becoming so large and no single machine is
+powerful enough to process these datasets in a viable amount of time.
+\cite{LI2014ParameterServers}
+\par
+
+There are many challenges a Distributed Machine Learning system can introduce
+such as scalability. As more machines are added to a system the communication
+overhead increases. Communication bandwidth is a limited resource which can
+produce bottlenecks when the network becomes saturated. The goal of a good
+Distributed Machine Learning System is to have the number of nodes be as
+proportional to rate of model training as possible.
+\par
+
+Resiliency is another factor to consider. With more independent systems working
+in conjunction and training that costs extensive time and expenses, its
+important that the training of a model doesn't fail. When a Machine fails to
+work a Distributed Machine Learning System must have contingency plans. These
+plans can ensure the minimum amount of model data is lost, and that the machine
+learning can continue swiftly after a major error.
+\par
+
+% The popular current solution is to have multiple machines compute the model
+% together, communicating the improvements that they've made to each other. The
+% model operates on a worker and parameter server paradigm. The server holds the
+% global model including all the parameters. Workers then use the model in
+% conjunction with the training data split between them to update the global model
+% in the parameter server. \cite{LI2014ParameterServers}
+% \par
+
+The popular current solution is to use a parameter server model. In brief the
+paradigm is made of two different types of components. The parameter server
+holds the global parameters of the model. Workers are given the model
+parameters by the parameter server. The workers then perform an iteration of
+whichever machine learning algorithm they are performing, modifying the
+parameters. Then the modified parameters are sent to the parameter server
+where they are aggregated, the global model parameters are updated and the
+cycle continues until the model has converged on an answer.
+\par
+
+
+
+
+
+
+
+\subsection{Low Power Hardware, IoT and Mobile Computation}
+
+Historically Machine learning algorithms have been focused on high model
+accuracy through large models and vast amounts of training data, energy
+consumption and efficiency has rarely been taken into consideration. However
+with the rise of Internet of Things (IoT) devices and the established ubiquity
+of smart phones more data than ever is being produced. Soon this data generation
+with exceed the capacity of the internet, and experts estimate that over 90\% of
+data will be stored and processed locally. \cite{Chaing2016FogIoT} By extension
+this means machine learning algorithms will have to be performed locally too.
+This introduces some challenging issues. Modern machine learning algorithms
+require vast computational power and large amounts of data. Local devices don't
+have the capacity to hold large data sets or the power to compute machine
+learning models in a viable amount of time, while many of them are also battery
+powered so power consumption becomes another issue.
+
+% modern solutions for edge computing 
+A solution to this is to massively distribute the model over multiple
+decentralised nodes. The level of distribution is even greater than that of
+centralised compute clusters. In this solution each device computes a model
+using its own local data, infrequently (due to network constraints) the model is
+shared with a coordination server, which will then distribute the changes across
+all nodes in the network. \cite{wang2018EdgeLearning} While this method is
+inefficient as the infrequent communications mean that many nodes may do much of
+the same work, and the merging of local models into a global one infrequently
+may cause loss of information. It still produces a model which converges in a
+relatively few rounds of communication. \cite{konevcny2016federated}
+
+% low power solutions
+Efforts have been made to reduce device specification needed for machine learning
+algorithms to operate. One of these is Data stream mining. The idea is that a
+device can stream the analytics data directly into the model rather than storing
+the data in an intermediate place. \cite{garciaMartin2019MLEnergy} This means
+after the data has been read by the model it is lost. But that also means that
+no data needs to be stored, meaning resources are not spent reading and writing
+to storage. This has an application in mobile devices, as they produce data at a
+low rate through user interaction. Therefore the model can be build in real time
+as the actions occur. The data produced on the mobile itself may not produce
+enough data to effectively train the model, but via communication with other
+users distributed over the network the model can converge.
+
+% there has not been much work done in low power distributed setting
+From the research available there seems to be research into distributed
+computing from local devices and investigation in to power measurement
+\cite{wang2018EdgeLearning, konevcny2016federated} and reduction of machine
+learning algorithms on local devices. \cite{garciaMartin2019MLEnergy} But there
+is a distinct lack of research into efficiency of \textit{distributed algorithms} from
+the perspective of efficiency and power consumption on local devices. Having a
+more power efficient distributed machine learning algorithm, even if the
+optimisation was marginal on each device, would have an enormous effect on the
+output of the system, as many devices are connected.

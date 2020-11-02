@@ -120,16 +120,16 @@ components while spending more on computation and less time waiting.
         server and red lines indicate parameters being sent to the worker nodes.}
 \end{figure}
 When creating distributed machine learning models there two different methods
-for distributing training, Model Parallelism and data parallelism. These two
+for distributing training, model parallelism and data parallelism. These two
 methods are not mutually exclusive and can be used in conjunction with one
-another, such as in DistBelief. \cite{Dean2012Distbelief}. Model Parallelism is
-when model parameters are split between the nodes. As Data Parallelism is when
+another, such as in DistBelief. \cite{Dean2012Distbelief}. model parallelism is
+when model parameters are split between the nodes. As data parallelism is when
 the data is split between the nodes. \cite{Xing2015Petuum} Often with model
 parallelism the whole set of training data is passed through each node. While in
-Data Parallelism its common for each node to hold the whole machine learning
+data parallelism its common for each node to hold the whole machine learning
 model.
 
-The key advantage of Model Parallelism is that machine learning models can be
+The key advantage of model parallelism is that machine learning models can be
 far larger as they no longer have to sit on one machine. However this one great
 advantage comes with some disadvantages. Some parameters may take more time to
 converge than others, this means that at times some nodes may be idle while
@@ -140,7 +140,7 @@ However this requires more computational overhead and communication and reduces
 iteration throughput.
 \cite{kim2016STRADS}
 
-Data Parallelism has the benefit that data throughput can be very large, making
+data parallelism has the benefit that data throughput can be very large, making
 processing using this method very fast. However with more nodes the
 communication overhead increases as the nodes must communicate the changes in
 their model parameters to each other. \cite{elgabli2020gadmm} The nodes can

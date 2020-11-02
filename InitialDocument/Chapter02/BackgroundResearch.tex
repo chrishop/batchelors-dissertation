@@ -6,37 +6,37 @@
 To first understand Distributed Machine Learning you must first understand the
 fundamentals of Machine Learning and Neural Networks. 
 
-There are many machine learning methods some requiring training data
-(supervised) some being able to find patterns in data without being given
-solutions (unsupervised). \cite{alpaydin2020introduction} An example of an
-supervised system may be predicting house prices, using multiple factors about
-each house (market data, geographic area, square footage etc.) to come to a
-conclusion about what the house could sell for. This would be trained using data
-of previously sold houses to predict current ones. An example of an unsupervised
-system could be identification of new plant species. This could be done by
-taking as many features of a plant as possible, then apply a clustering
+There are many machine learning methods some requiring training data which we
+call supervised and some being able to find patterns in data without being given
+solutions called unsupervised. \cite{alpaydin2020introduction} An example of
+a supervised system may be predicting house prices, using multiple factors
+about each house (market data, geographic area, square footage etc.) to come to
+a conclusion about what the house could sell for. This would be trained using
+data of previously sold houses to predict current ones. An example of an
+unsupervised system could be identification of new plant species. This could be
+done by taking as many features of a plant as possible, then apply a clustering
 algorithm to see if there are two distinct clusters in the data. If there were
 then that would suggest two different plant species. Neural Networks tend to
-focus on supervised learning and use a form Gradient Descent called Stochastic
+focus on supervised learning and use a form gradient descent called Stochastic
 Gradient Descent.
 
 Many Machine Learning algorithms use a cost function to measure how well or
-badly they are solving a problem, these algorithms also use parameters which
-internal variables of a machine learning model define how they are solving the
+badly they are solving a problem, these algorithms use parameters which are
+internal variables of a machine learning model and define how they solve the
 problem. If you map \(costFunction(x)\), where \(x\) is the model parameter, for
-every \(x\) value. Then a graph will be produced, the lowest point on the graph
-will be the global minimum. There may be other troughs higher than the global
-minimum these are called local minimums. A global minimum represents the lowest
-value of the cost function which indicates the parameter values produce the best
-solution for your problem. Initial model parameters are often randomised,
-meaning they may start at a high point on the cost function graph, the goal is
-to get to the lowest point possible. To do this you must \textit{descend} down
-the \textit{gradient} to a local minima, the algorithm that does this is called
-gradient descent for that very reason. This often happens in little steps after
-the observation of each piece of data. However it is computationally expensive
-to step down the gradient after each example. It is more efficient to calculate
-the average step of a randomised selection of data. This is know as Stochastic
-Gradient Descent.
+every \(x\) value. Then a graph will be produced \(y = costFunction(x)\), the
+lowest point on the graph will be the global minimum. There may be other troughs
+higher than the global minimum these are called local minimums. A global minimum
+represents the lowest value of the cost function which indicates the parameter
+values produce the best solution for your problem. Initial model parameters are
+often randomised, meaning they may start at a high point on the cost function
+graph, the goal is to get to the lowest point possible. To do this you must
+\textit{descend} down the \textit{gradient} to a local minima, the algorithm
+that does this is called gradient descent for that very reason. This often
+happens in little steps after the observation of each piece of data. However it
+is computationally expensive to step down the gradient after each example. It is
+more efficient to calculate the average step of a randomised selection of data.
+This is know as Stochastic Gradient Descent.
 
 Neural Networks are structures that can perform multi-variable gradient descent
 when provided with training data. Neural Networks are comprised of layers of

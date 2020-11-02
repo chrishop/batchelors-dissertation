@@ -120,10 +120,22 @@ RingTMP (Ring Topological Model Parallel) is a Ring Topological Model Parallel
 distributed machine learning framework focusing on optimising Distributed
 Stochastic Gradient Descent in low power hardware. This is a novel design
 drawing in inspiration much research but particularly from the STRADS and
-Distbelief machine learning frameworks, \cite{kim2016STRADS,Dean2012Distbelief}
-in addition to identifying issues with existing systems and addressing them.
+DistBelief machine learning frameworks. \cite{kim2016STRADS,Dean2012Distbelief}
+
+As I have already alluded to this will take the form of a framework that will
+operate on multiple machines which henceforth I will describe as nodes. Each
+nodes contains a series of adjacent of Deep Neural Network (DNN) layers. The
+nodes are arranged in a ring. In the clockwise direction matrix multiplication
+is performed and in the anticlockwise direction gradient descent through
+backpropagation is performed. There are two kinds of nodes master nodes and
+worker nodes. Master nodes have direct access to the training data being input
+into the Neural Network, whilst also performing operations on the data flowing
+through the neural network. Worker nodes simply perform matrix multiplication
+and backpropagation as it is directed via adjacent nodes. There is only one
+master node per network and as many worker nodes as desired. 
+
 These are the benefits my system will have over existing parameter server
-architecture:
+architectures:
 \begin{itemize}
     % \item RingTMP aims to reduce the time workers are idle to lower than the
     % parameter server model. This will manifest itself by distributing the work
@@ -164,16 +176,38 @@ My aims more specifically for this project are to:
 \begin{itemize}
     \item Create a prototype RingTMP framework and run it multiple machines
     simultaneously.
-    \item Create a parameter server model framework using the same tools and run
-    that over multiple machines simultaneously.
+    \item Create a parameter server model framework using the same tools that
+    will run over multiple machines simultaneously.
     \item Show that RingTMP reduces the time workers are idle in comparison to
     the parameter server model.
-    \item RingTMP takes overall less power to run in com
-    \item Display that RingTMP is more scalable than a generic parameter server.
+    \item Demonstrate that RingTMP takes less overall power to run in comparison
+    to the parameter server.
+    \item Display that RingTMP is at least as scalable than a generic parameter
+    server.
     \item Show that this solution can be as resilient as a parameter server
     model distributed neural network.
     \item Demonstrate that RingTMP can hold larger models on comparison to a
     standard parameter server, where each worker hold the whole model.
+\end{itemize}
+I will do this by running both systems on low power devices, then running
+controlled experiments on them to measure their performance.
+
+
+
+\subsection{Overview}
+This document is split up into the following sections:
+\begin{itemize}
+ \item \textbf{Introduction} Current section. Introduce the project and its aims.
+ \item \textbf{Background Research} Presents related research material and similar applications and areas.
+ \item \textbf{Project Plan and Time Management} Gives an outline of my project timeline, methodology and assessment of risk.
+ \item \textbf{Conclusion} Summary of previous sections.
+ %\item \textbf{Section 4} Project plan and time management.
+ %\item \textbf{Section 5} Summary of previous sections.
+ %\item \textbf{Section 5} presents the design stages of the application.
+ %\item \textbf{Section 6} outlines the application requirements and specifications
+ %\item \textbf{Section 7} introduces the implementation and how they have been implemented.
+ %\item \textbf{Section 8} describes the testing process
+ %\item \textbf{Section 9} presents potential ideas for future work on the application.
 \end{itemize}
 
 % \subsection{Related Work}
@@ -229,16 +263,6 @@ My aims more specifically for this project are to:
 % that avoids these limitations, therefore creating a efficient, scalable and
 % resilient system.
 
-% As I have already alluded to this will take the form of a framework that will
-% operate on multiple machines which henceforth I will describe as nodes. Each
-% nodes contains a series of adjacent of Deep Neural Network (DNN) layers. The
-% nodes (as before described) are arranged in a ring. In the clockwise direction
-% matrix multiplication is performed and in the anticlockwise direction gradient
-% descent through backpropagation is performed. There are two kinds of nodes
-% master nodes and worker nodes. Master nodes have direct access to the training
-% data being input into the Neural Network, whilst also performing operations on
-% the data flowing through the neural network. There is only one master node per
-% network and as many worker nodes as desired. 
 % \par
 
 % Each node has a 3 part structure.
@@ -275,18 +299,5 @@ My aims more specifically for this project are to:
 % \todo{Address problems and what are the problems? \\ many solutions\\}
 % T\lipsum[4]
 
-% \subsection{Overview}
-% This document is split up into the following sections:
-% \begin{itemize}
-%  \item \textbf{Section 1} Current section. Introduce the project and its aims.
-%  \item \textbf{Section 2} Presents related research material and similar applications and areas.
-%  \item \textbf{Section 3} Gives an overview on the technological choices that will be used.
-%  \item \textbf{Section 4} Project plan and time management.
-%  \item \textbf{Section 5} Summary of previous sections.
-%  %\item \textbf{Section 5} presents the design stages of the application.
-%  %\item \textbf{Section 6} outlines the application requirements and specifications
-%  %\item \textbf{Section 7} introduces the implementation and how they have been implemented.
-%  %\item \textbf{Section 8} describes the testing process
-%  %\item \textbf{Section 9} presents potential ideas for future work on the application.
-% \end{itemize}
+
 

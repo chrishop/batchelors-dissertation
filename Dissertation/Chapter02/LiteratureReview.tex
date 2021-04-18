@@ -178,65 +178,59 @@ Here you can see that if you can find a way of making the communication time
 equal to the time per iteration. Then \(c\) would have a negligible effect on
 the equation.
 
-% talk about it in the context of a parameter server, then that opens the way to
-% talk about consistency models
-
-% TODO: ADD section here looking at different scheduling for parameter servers
-% and consistency models
-
 
 % Do I need to include this?
-% \subsection{Low Power Hardware, IoT and Mobile Computation}
+\subsection{Low Power Hardware, IoT and Mobile Computation}
 
-% Historically machine learning algorithms have been focused on high model
-% accuracy through large models and vast amounts of training data, energy
-% consumption and efficiency has rarely been taken into consideration. However
-% with the rise of Internet of Things (IoT) devices and the established ubiquity
-% of smart phones more data than ever is being produced. Soon this data generation
-% with exceed the capacity of the internet, and experts estimate that over 90\% of
-% data will be stored and processed locally. \cite{Chaing2016FogIoT} By extension
-% this means machine learning algorithms will have to be performed locally too.
-% This introduces some challenging issues. Modern machine learning algorithms
-% require vast computational power and large amounts of data. Local devices don't
-% have the capacity to hold large data sets or the power to compute large machine
-% learning models in a viable amount of time, while many of them are also battery
-% powered so power consumption becomes another issue.
+Historically machine learning algorithms have been focused on high model
+accuracy through large models and vast amounts of training data, energy
+consumption and efficiency has rarely been taken into consideration. However
+with the rise of Internet of Things (IoT) devices and the established ubiquity
+of smart phones more data than ever is being produced. Soon this data generation
+with exceed the capacity of the internet, and experts estimate that over 90\% of
+data will be stored and processed locally. \cite{Chaing2016FogIoT} By extension
+this means machine learning algorithms will have to be performed locally too.
+This introduces some challenging issues. Modern machine learning algorithms
+require vast computational power and large amounts of data. Local devices don't
+have the capacity to hold large data sets or the power to compute large machine
+learning models in a viable amount of time, while many of them are also battery
+powered so power consumption becomes another issue.
 
-% % modern solutions for edge computing 
-% A solution to this is to massively distribute the model over multiple
-% decentralised nodes. The level of distribution is even greater than that of
-% centralised compute clusters. In this solution each device computes a model
-% using its own local data, infrequently (due to network constraints) the model is
-% shared with a coordination server, which will then distribute the changes across
-% all nodes in the network. \cite{wang2018EdgeLearning} While this method is
-% inefficient as the infrequent communications mean that many nodes may do much of
-% the same work, and the merging of local models into a global one infrequently
-% may cause loss of information. It still produces a model which converges in a
-% relatively few rounds of communication. \cite{konevcny2016federated}
+% modern solutions for edge computing 
+A solution to this is to massively distribute the model over multiple
+decentralised nodes. The level of distribution is even greater than that of
+centralised compute clusters. In this solution each device computes a model
+using its own local data, infrequently (due to network constraints) the model is
+shared with a coordination server, which will then distribute the changes across
+all nodes in the network. \cite{wang2018EdgeLearning} While this method is
+inefficient as the infrequent communications mean that many nodes may do much of
+the same work, and the merging of local models into a global one infrequently
+may cause loss of information. It still produces a model which converges in a
+relatively few rounds of communication. \cite{konevcny2016federated}
 
-% % low power solutions
-% Efforts have been made in techniques to reduce the power memory and storage
-% needed for machine learning algorithms to operate. One of these is Data Stream
-% Mining. The idea is that a device can stream the analytics data directly into
-% the model rather than storing the data in storage for later use.
-% \cite{garciaMartin2019MLEnergy} This means after the data has been read by the
-% model it is lost. But that also means that no data needs to be stored, meaning
-% resources are not spent reading and writing to storage. This has an application
-% in mobile devices, as they produce data at a low rate through user interaction.
-% Therefore the model can be build in real time as actions occur. The data
-% produced on the mobile itself may not be enough to effectively train the model,
-% but via communication with other users distributed over the network the model
-% can converge. \cite{konevcny2016federated}
+% low power solutions
+Efforts have been made in techniques to reduce the power memory and storage
+needed for machine learning algorithms to operate. One of these is Data Stream
+Mining. The idea is that a device can stream the analytics data directly into
+the model rather than storing the data in storage for later use.
+\cite{garciaMartin2019MLEnergy} This means after the data has been read by the
+model it is lost. But that also means that no data needs to be stored, meaning
+resources are not spent reading and writing to storage. This has an application
+in mobile devices, as they produce data at a low rate through user interaction.
+Therefore the model can be build in real time as actions occur. The data
+produced on the mobile itself may not be enough to effectively train the model,
+but via communication with other users distributed over the network the model
+can converge. \cite{konevcny2016federated}
 
-% % there has not been much work done in low power distributed setting
-% From the research available there seems to be research into distributed
-% computing on local devices, investigation in to power measurements of machine
-% learning algorithms \cite{wang2018EdgeLearning, konevcny2016federated} and
-% power reduction of machine learning algorithms on local devices.
-% \cite{garciaMartin2019MLEnergy} But there is a distinct lack of research into
-% efficiency of \textit{distributed algorithms} from the perspective of efficiency
-% and power consumption on local devices. Having a more power efficient
-% distributed machine learning algorithm, even if the optimisation was marginal on
-% each device, would have an enormous effect on the output of the system, as many
-% devices are connected.
+% there has not been much work done in low power distributed setting
+From the research available there seems to be research into distributed
+computing on local devices, investigation in to power measurements of machine
+learning algorithms \cite{wang2018EdgeLearning, konevcny2016federated} and
+power reduction of machine learning algorithms on local devices.
+\cite{garciaMartin2019MLEnergy} But there is a distinct lack of research into
+efficiency of \textit{distributed algorithms} from the perspective of efficiency
+and power consumption on local devices. Having a more power efficient
+distributed machine learning algorithm, even if the optimisation was marginal on
+each device, would have an enormous effect on the output of the system, as many
+devices are connected.
 

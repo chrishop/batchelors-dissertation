@@ -42,7 +42,9 @@ Neural networks are structures that can perform multi-variable gradient descent
 when provided with training data. Neural networks are comprised of layers of
 interconnected neurons in a lattice like structure. Each neuron holds parameter
 information the adjusting of which through gradient descent leads to the solving
-of a problem through reaching the local minimum of the cost function.
+of a problem through reaching the local minimum of the cost function. These
+structures can then be placed in a parameter server and run in a distributed
+fashion, if desired.
 
 \subsection{Limited History of Distributed Machine Learning}
 % TODO: EXPAND critically analyse all of these sources, flesh this section out a little by
@@ -53,7 +55,7 @@ One of the first pieces of research into distributed machine learning was
 \cite{newman2008distributed} One of the first instances of distributed machine
 learning  was  used  to  categorise  New York  Times  articles  using  Latent
 Dirichlet Allocation (LDA), which identifies the affiliations words have to
-certain topics.  While the paper focused on parallelising the algorithm and
+certain topics. While the paper focused on parallelising the algorithm and
 running them over multiple artificially isolated cores the results showed that
 distributed machine learning could have scalability and didn’t impact the rate
 of convergence of the model significantly. This was followed by a paper by Jia
@@ -68,53 +70,6 @@ googlemapreduce2008} culminating in 2014 when the parameter server as it is
 known today \cite{LI2014ParameterServers} was produced. This parameter server is
 highly sophisticated and flexible, accommodating the difference in hardware
 components while spending more on computation and less time waiting.
-
-\subsection{The Communication Issue}
-% TODO: EXPAND by talking about the magnitudes in speed between local training
-% and training via nodes
-
-Distributed neural networks must communicate with each other in some way in
-order to work together. This needs to be formalised to be able to measure the
-efficiency of our machine learning system. Parts of this reasoning already
-appears in these papers too. \cite{konevcny2016federated ,Ma2017DistributedOptimisation}
-
-If we consider how a neural network operates if we were to run it on a single
-node, we could characterise its computation as such:
-\begin{equation}
-    TIME = I_A (\epsilon) \times T_A 
-\end{equation}
-
-Where \(I_A(\epsilon)\) is the number of iterations of the algorithm \(A\) it
-takes to reach accuracy \(\epsilon\) and \(T_A\) is the time of each iteration
-of the algorithm. Here maximising the convergence per iteration or decreasing
-the time an iteration takes will decrease the runtime of the algorithm. In a
-distributed setting this equation changes to this:
-\begin{equation}
-    TIME = I_A (\epsilon) \times (c + T_A)  
-\end{equation}
-In this equation we have the added variable \(c\), this represents time taken
-for communication per iteration. In a distributed setting this will always
-remain above a non trivial amount of data. Unfortunately The majority of machine
-learning algorithms use a stochastic method which means a very large number of
-iterations \((I_A(\epsilon))\) that take a short amount of time (small \(T_A\)).
-You can see that no matter how small \(c\) is there will be a significant impact
-of the time taken. In fact with a naive approach of communication each iteration
-almost certainly \(c > T_A\).
-
-However this view doesn't take into account the possibility that communication
-could happen at the same time as an iteration. For example imagine a pipeline of
-nodes where each nodes performs an iteration but can communicate its previous
-iteration to the next node at the same time. Then the time taken could be
-described like so:
-\begin{equation}
-    TIME = I_A (\epsilon) \times max(c, T_A)
-\end{equation}
-Here you can see that if you can find a way of making the communication time
-equal to the time per iteration. Then \(c\) would have a negligible effect on
-the equation.
-
-
-
 
 
 \subsection{Model and Data Parallelism}
@@ -147,16 +102,87 @@ However this requires more computational overhead and communication and reduces
 iteration throughput.
 \cite{kim2016STRADS}
 
-data parallelism has the benefit that data throughput can be very large, making
+Data parallelism has the benefit that data throughput can be very large, making
 processing using this method very fast. However with more nodes the
 communication overhead increases as the nodes must communicate the changes in
-their model parameters to each other. \cite{elgabli2020gadmm} The nodes can
-communicate with each other synchronously, but this means the computation is
-only as fast as the slowest node. If the nodes communicate with each other
-asynchronously then some of the calculations will be made on out of date model
-parameters so training examples may be needlessly wasted.
+their model parameters to each other. \cite{elgabli2020gadmm}
+
+\subsection{Model Consistency}
+Both of these parallel paradigms still function on the basis of a strictly
+iterative model, where communication is the limiting factor. Creating parameter
+server similar to how Googles map reduce algorithm is implemented
+\cite{googlemapreduce2008} is still in some sense sequential. The next iteration
+can't continue until all workers have responded with their updated parameters,
+and each worker must send its results back no matter how significant its work
+is. Relaxing these restraints in specific ways have been shown to produce faster
+training times, while still converging on a model just as accurate. Especially
+when time, not data is at a premium.\cite{li2014communication}
+\par
+Partially relaxing the iterative restraint of the parameter server and instead
+using a bounded delay, dramatically decreases the wait times of workers to
+almost 0. A bounded delay allows workers to operate on slightly stale
+parameters. Unintuitive this allows for faster convergence than the sequential
+model, as it can iterate over the data faster and learn almost as much from each
+iteration. \cite{li2014communication}.
+\par
+The other restraint that can be relaxed is the requirement to always send
+updated weights back to the parameter server. Many training examples don't
+dramatically change the parameters. Therefore only the training examples that
+cause the parameters to change significantly need to be sent back to the
+parameter server. This also allows for greater scalability, as each worker only
+communicates significant updates to the parameter server, meaning more nodes can
+be used before saturating the network. \cite{li2014communication}. 
+
+\subsection{The Communication Issue}
+% TODO: EXPAND by talking about the magnitudes in speed between local training
+% and training via nodes? 
+
+
+Distributed neural networks must communicate with each other in some way in
+order to work together. This needs to be formalised to be able to measure the
+efficiency of our machine learning system. Parts of this reasoning already
+appears in these papers too. \cite{konevcny2016federated ,Ma2017DistributedOptimisation}
+
+If we consider how a neural network operates if we were to run it on a single
+node, we could characterise its computation as such:
+\begin{equation}
+    TIME = I_A (\epsilon) \times T_A 
+\end{equation}
+
+Where \(I_A(\epsilon)\) is the number of iterations of the algorithm \(A\) it
+takes to reach accuracy \(\epsilon\) and \(T_A\) is the time of each iteration
+of the algorithm. Here maximising the convergence per iteration or decreasing
+the time an iteration takes will decrease the runtime of the algorithm. In a
+distributed setting this equation changes to this:
+\begin{equation}
+    TIME = I_A (\epsilon) \times (c + T_A)  
+\end{equation}
+In this equation we have the added variable \(c\), this represents time taken
+for communication per iteration. In a distributed setting this will always
+remain above a non trivial amount of data. Unfortunately the majority of machine
+learning algorithms use a stochastic method which means a very large number of
+iterations \((I_A(\epsilon))\) that take a short amount of time (small \(T_A\)).
+You can see that no matter how small \(c\) is there will be a significant impact
+of the time taken. In fact with a naive approach of communication each iteration
+almost certainly \(c > T_A\).
+
+However this view doesn't take into account the possibility that communication
+could happen at the same time as an iteration. For example imagine a pipeline of
+nodes where each nodes performs an iteration but can communicate its previous
+iteration to the next node at the same time. Then the time taken could be
+described like so:
+\begin{equation}
+    TIME = I_A (\epsilon) \times max(c, T_A)
+\end{equation}
+Here you can see that if you can find a way of making the communication time
+equal to the time per iteration. Then \(c\) would have a negligible effect on
+the equation.
+
+% talk about it in the context of a parameter server, then that opens the way to
+% talk about consistency models
 
 % TODO: ADD section here looking at different scheduling for parameter servers
+% and consistency models
 
 
 % Do I need to include this?

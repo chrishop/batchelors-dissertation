@@ -59,3 +59,24 @@ explain in more detail how the neural network was implemented from scratch and t
 mathematics behind its function.
 
 \subsubsection{Forward Propagation}
+<<Insert neural network here>>
+\par
+Neural networks are composed of layers, each layer is composed of neurons.
+Numerical inputs are inserted through the input layer, forward propagate through
+the network and push numerical results to the output layer. For our purposes
+each neuron in the output layer represents a different category, the value of
+that neuron is the probability the given input belong to that category.
+
+
+% need to explain the components of a neuron
+Each neuron holds a value, called an activation. Each layer has a bias and a
+collection of neurons. Between the layers every neuron in one layer connects to
+every other neuron in the next layer, every connection has an associated value
+called a weight. To calculate the weight of a single neuron in the next layer
+you must multiply the activations of the previous layer with the weights
+connected to the neuron in question, then sum the values, add the bias, then
+apply the activation function to that value.
+
+this weight is used
+to along with the activation function to calculate the activation of the node in
+the next network. 

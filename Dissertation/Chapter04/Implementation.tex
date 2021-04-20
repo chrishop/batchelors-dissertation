@@ -44,3 +44,18 @@ strong machine learning library, which means implementing the mathematics of the
 neural network myself. While this was a sizeable amount of work to do, it had
 the benefit that I didn't to wrestle with an opinionated API such as TensorFlow,
 I could create my own API to meet my ends.
+
+\subsection{Neural Network Implementation}
+In order to create a distributed neural network. First I needed to create a
+basic feed forward network that could operate on a single machine. This network
+didn't need to be fully featured, its just a means to make an objectively
+comparative performance between RingTMP and a generic parameter server.
+Therefore only 2 types of layers were implemented, the hidden layer and the
+output layer. The hidden layer is a generic dense layer similar to the kind you
+would find in any other neural network library. It pipes the result of a matrix
+multiplication into a ReLU activation function. The output layer performs matrix
+multiplication before applying the softmax function. Within this section I will
+explain in more detail how the neural network was implemented from scratch and the
+mathematics behind its function.
+
+\subsubsection{Forward Propagation}

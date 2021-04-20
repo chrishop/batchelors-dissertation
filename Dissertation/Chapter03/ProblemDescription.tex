@@ -1,0 +1,87 @@
+%-----------------------------------------------------------------------------------------
+\clearpage
+\section{Problem Description}
+%-----------------------------------------------------------------------------------------xs
+
+% show the ideal situation
+In the most ideal world, communication between distributed network nodes would
+not to bottleneck performance. As many nodes as you liked could be added to your
+network and performance would scale linearly with each node added.
+
+
+% In the most ideal world, communication between distributed network nodes would
+% never saturate bandwidth and each node would spend all of its time on
+% computation rather than waiting. This would enable distributed machine learning
+% to iterate just as fast as single node machine learning.
+
+% show the situation as it currently exists
+Currently when distributed neural networks become large enough, they become
+saturated. Adding more nodes no longer increases the speed of computation. To
+increase the speed of training further by adding more nodes at least one of two
+things must happen. Either the bandwidth between each node must be increased or
+the nodes must communicate less while still communicating enough information to
+continue training.\cite{li2014communication}\cite{SunTimeDataflow} This limit in
+the rate of computation means that training a neural network cost more time and
+money. We are at the point now where even if mistakes are found in the largest
+projects, its often 'infeasible' to retrain the model due to time and monetary
+cost. \cite{fewshowlearners2020gpt}
+
+% Ultimately we want to make neural networks faster to train. The way this is
+% achieved from the perspective of distributed neural networks is to create more
+% neural network nodes. The communication between nodes often saturates the
+% network, when this happens adding more nodes no longer speeds up computation.
+% \cite{li2014communication}. To increase the speed of training further by adding
+% more nodes at least one of two things must happen. Either the bandwidth between
+% each node must be increased or the nodes must communicate less while still
+% communicating enough information to continue
+% training.\cite{li2014communication}\cite{SunTimeDataflow}
+% cite 
+% \par
+% Training a neural network model is not deterministic, it often takes multiple
+% attempts and adjustments to train. Even when the model is training with some
+% stability it can take many attempts to produce the most accurate model. This
+% takes enormous amounts of time and processing power. Reducing the amount of time
+% and by extension the cost of training would mean that researchers and developers
+% would be able to iterate on there models faster accelerating the rate at which
+% the field itself develops. Even in situations where researchers have the most
+% resources, when mistakes are made its often 'infeasible' to retrain the model
+% due to time and monetary cost. \cite{fewshowlearners2020gpt}
+\par
+% the consequences if this is ignored
+The impact of leaving this problem unsolved will mean the limiting factor of
+distributed neural networking will be not the processing power of the nodes but
+the bandwidth between them, bandwidth being one of the scarcest resources in
+data centres \cite{LuizDatacenterAsAComputer}. It will stifle the growth of
+machine learning models, especially for those that cannot get the funding for high
+bandwidth compute clusters.
+
+This is why I designed a new paradigm for distributed neural networking that
+should reduce the communication between each node relative to a generic
+parameter server. The new paradigm also allows for higher bandwidth between
+adjacent nodes. As in this scenario nodes need only communicate with their
+adjacent partner. This results in a distributed learning model that isn't bound
+by bandwidth when scaling, and should be able to train models to the same level
+of accuracy in the same amount of time.
+
+% The impact of leaving this problem unsolved will place
+% a semi-hard limit on the scalability of distributed machine learning. Bandwidth
+% being one of the scarcest resources in data centers, up to 100 times smaller
+% than local memory bandwidth. \cite{LuizDatacenterAsAComputer} Distributed
+% machine learning speed will be limited by t
+
+% add some more evidence with citation here
+% less communication bandwidth you can cite significant update thing, or compressing
+% carnigie mellon university did some work with globe distributed machine learning, look that up
+
+
+% As it stands bandwidth is the factor limiting how many
+% nodes a distributed neural network can scale to. This in turn 
+
+% the consequences of not solving the problem
+
+
+% Bandwidth restrictions between nodes place a limit
+% Through reading the relevant literature, the key problem of this project is this. How can we optimise communication between workers
+
+
+

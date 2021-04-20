@@ -1,14 +1,46 @@
 %-----------------------------------------------------------------------------------------
 \clearpage
-\section{D}
+\section{Implementation}
 %-----------------------------------------------------------------------------------------
 
+\subsection{Tooling}
+Implementing a distributed neural network is too large a task to be undertaken
+from scratch. Therefore its necessary to used existing tools, to make the
+development viable in the time given. This is difficult as not many languages
+lend themselves to both distributed systems and neural networks.
 
-\subsection{subsection1}
-\lipsum[5-7]
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{hp2}
-    \caption{Project Homepage}
-    \label{fig:project-homepage}
-\end{figure}
+To ensure high performance the project could be implemented in C++. While C++ is
+often very performant and also has low level bindings for ML libraries such as
+TensorFlow. However even the creator of the language sees the need to improve
+its ability to improve its distributed performance. \cite{stroustrupInterview}
+
+Python has great tooling for neural networking, such as TensorFlow
+\cite{abadi2016tensorflow}, and PyTorch \cite{paszke2019pytorch}. Moreover it
+has great support for numerical computing with NumPy \cite{harrisNumpy2020}.
+These are performant too, by calling C functions or creating code which is
+optimised to run on GPUs to parallelise computation. However due to the Global
+Interpreter Lock (GIL) python is infamously bad at concurrency, while its
+distributed tooling is implemented in native python code, which lack of speed
+and could bottleneck the performance gained from using NumPy and TensorFlow.
+
+Ultimately I decided to use Elixir as the programming language of
+implementation. This is because Elixir was designed for developing highly
+concurrent distributed systems. It does this by having a uniquely brilliant
+concurrency model. As opposed to OOP languages where 'everything is an object'
+in Elixir 'everything is a process'. This means the default way of writing the
+language enables it to be concurrent and scalable. Elixir also has the ability
+to communicate with other Elixir programs over the network using its own
+application protocol on top of TCP/IP. Meaning its as easy to communicate with
+local processes on your own machine as processes on another machine running an
+Elixir program. Its also been used by artificial intelligence researchers before
+as the process concurrency models effortlessly lends itself to modelling
+neurons. \cite{sherNeuroevolutionThroughErlang} Using Elixirs native float and
+arithmetic implementation would be slower than a C++ or a NumPy implementation,
+luckily there is a stable package which supports matrix calculations even faster
+than those in NumPy called Matrex. \cite{matrex}
+
+The only drawback of using Elixir is at the time of development it didn't have a
+strong machine learning library, which means implementing the mathematics of the
+neural network myself. While this was a sizeable amount of work to do, it had
+the benefit that I didn't to wrestle with an opinionated API such as TensorFlow,
+I could create my own API to meet my ends.

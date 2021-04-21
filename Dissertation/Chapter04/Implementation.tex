@@ -46,7 +46,7 @@ the benefit that I didn't to wrestle with an opinionated API such as TensorFlow,
 I could create my own API to meet my ends.
 
 \subsection{Neural Network Implementation}
-In order to create a distributed neural network. First I needed to create a
+In order to create a distributed neural network. I first needed to create a
 basic feed forward network that could operate on a single machine. This network
 didn't need to be fully featured, its just a means to make an objectively
 comparative performance between RingTMP and a generic parameter server.
@@ -60,64 +60,65 @@ the mathematics behind its function.
 
 % creating a network should go here first
 \subsubsection{Initialisation}
-Neural networks are composed of layers, while in the conceptual model layers are
+Neural networks are composed of layers, while conceptually layers are
 composed of neurons, they're practically implemented with two components. A
 weights matrix and a bias vector. As I have already mentioned in this network
 there are two types of layers, hidden layers and output layers. We need to label
 each layer with its type, so we know how to perform the forward and
-backpropagation on the layer. Therefore we can describe a layer as the tuple:
+backpropagation. Therefore we can describe a layer as the tuple:
 \begin{lstlisting}[numbers=none,frame=none]
     {layer_type, weights, bias}
 \end{lstlisting}
 
 Placing several of these tuples in a list creates a network:
 \begin{lstlisting}[numbers=none,frame=none]
-    [
-        {:hidden_layer, weights_1, bias_1},
-        {:hidden_layer, weights_2, bias_2},
-        {:output_layer, weights_3, bias_3}
-    ]
+  [{:hidden_layer, weights_1, bias_1},
+   {:hidden_layer, weights_2, bias_2},
+   {:output_layer, weights_3, bias_3}]
 \end{lstlisting}
 
-Weights and biases have different dimensions depending on the layers input size
+The weights and biases have different dimensions depending on the layers input size
 and output size. A layer might take an activations vector with a size of \(m\) and
 output a size of \(n\). The layer would hold a \(n \times m\) matrix
-and the dimensions of the bias for that vector would be \(n \times 1\). The
+and the dimensions of the bias would be \(n \times 1\). The
 output size of one layer must be the input size of the next layer, else the
 network will fail to function.
 
-Initialising the biases is easy, as biases are applicative not multiplicative.
-They can be initialised to 0. The trivial code is below.
+Initialising the biases is simple, as biases have the function of an intercept
+in a linear equation, they can be initialised to 0. The trivial code is below:
 \begin{lstlisting}
   defp initialise_bias(col) do
     Matrex.zeros(col, 1)
   end
   \end{lstlisting} 
 
-Each weight in each layer is initialised with random values from a uniform
-distribution, the shape of the uniform distribution is dependant upon the size
-of the input and output layers of the neural network. The type of initialisation
-used is dependant upon the activation function used. In the hidden layer the
-ReLU function is used, common wisdom first established in this paper
-\cite{he2015delving} states that for the fastest convergence He initialisation
-should be used. He initialisation done by sampling random values from a normal
-distribution with a mean of 0 and a variance of \( 2/N \) where \(N\) represents
-the number of input values to a layer. For the output layer, the softmax
-function is used. The best initialisation method in this case is using Xavier
-initialisation.\cite{glorot2010understanding} This also takes random samples
-from a normal distribution with a mean of 0 but has the variance of \( 1/N \)
-where \(N\) is \( (inputSize + outputSize) / 2 \). However in practice training
-the model often failed with these initialisations. This was because of what is
-know as the 'Dying ReLU Problem'. Which is when the elements of the Z vector of
-a layer are negative, the relu activation function will return a zero meaning no
-learning is taking place. Once a neuron becomes dead its unlikely it will be
-revived as the function is piecewise and provides no slope for recovery such as
-a LeakyReLU or a sigmoid function. To remedy this I trailed many distributions,
-settling on a mean of 0.5 with a variance of 0.25. While this is more
-simplistic, and may impact training times, its far more likely for the network
-to not be dead on arrival because of the initialisation parameters.
+Weights are more complex. Each layer is initialised with random values from a
+uniform distribution, the shape of the uniform distribution is dependant upon
+the size of the input and output layers of the neural network. The type of
+initialisation used is dependant upon the activation function used.
 
-This is part of the code which initialises the matrices in the layers:
+In the hidden layer the ReLU function is used, common wisdom first established
+in this paper \cite{he2015delving} states that for the fastest convergence He
+initialisation should be used. He initialisation is done by sampling random
+values from a normal distribution with a mean of 0 and a variance of \( 2/N \)
+where \(N\) represents the number of input values to a layer.
+
+For the output layer, the softmax function is used. The best initialisation
+method in this case is using Xavier
+initialisation. \cite{glorot2010understanding} This also takes random samples
+from a normal distribution with a mean of 0 but has the variance of \( 1/N \)
+where \(N\) is \( (inputSize + outputSize) / 2 \).
+
+However in practice training the model often failed with He initialisations.
+This was because of what is know as the 'Dying ReLU Problem'. Which is when the
+elements of the z vector of a layer are negative, the ReLU activation function
+will return a zero meaning no learning is taking place. Once a neuron becomes
+dead its unlikely it will be revived as the function is piecewise and provides
+no slope for recovery such as a Leaky ReLU or a sigmoid function. To remedy this
+I trialed many distributions, settling on a mean of 0.5 with a variance of 0.25.
+While this is more simplistic, and may impact training times, its far more
+likely for the network to not be dead on arrival because of the initialisation
+parameters. This is part of the code which initialises the matrices in the layers:
 \begin{lstlisting}
   defp random_val(_x, {n, :he, seed_state, acc}) do
     {val, new_state} = :rand.normal_s(0, 2 / col, seed_state)
@@ -135,10 +136,11 @@ This is part of the code which initialises the matrices in the layers:
   end
 \end{lstlisting}
 
-you can find the wider context for this code snippet in code listing
-\ref{network_initialisation} in the Appendix 1.
+you can find the wider context for this code snippet in code listing in the Appendix 1. ~\ref{network_initialisation} 
 
 \subsubsection{Forward Propagation}
+
+% need to put this stuff earlier its already been explained
 Neural networks are composed of layers, each layer is composed of neurons.
 Numerical inputs are inserted through the input layer, forward propagate through
 the network and push numerical results to the output layer. For our purposes
@@ -154,6 +156,8 @@ connected to the neuron in question, then sum the values, add the bias, then
 apply the activation function to that value. To explain more visually the
 process and mathematics more visually, see the diagram below of the interaction
 between two layers each with two nodes.
+
+<<REDO THIS BIT ABOVE>>
 
 \begin{figure}[h]
     \centering
@@ -190,10 +194,9 @@ is the weights, \(B\) is the bias, \(activationFunc(x)\) is the activation funct
     \end{aligned}
 \end{equation}
 
-The specific activation function used depends on the layer type. In my
-implementation there are only two layer types. Hidden layers and output layers.
-The only difference between these two layers is the activation function that
-they use. Hidden layers use the ReLU activation function which is a simple
+In my implementation there are only two layer types. Hidden layers and output
+layers. The only difference between these two layers is the activation function
+that they use. Hidden layers use the ReLU activation function which is a simple
 piecewise non-linear function described as such:
 \begin{equation}
     relu(z) = max(0,z)
@@ -219,9 +222,9 @@ into \lstinline{a_function(val_a, val_b)}}
 \end{lstlisting}
 
 The output layer uses a more complex activation function, the softmax function,
-which transforms its inputs into probabilities each probability representing an
-output category. The sum of these probabilities is always 1. This is the softmax
-function, where \(z\) is a \(i \times 1\) vector:
+which transforms its inputs into probabilities. The sum of these probabilities
+is always 1. This is the softmax function, where \(z\) is a \(i \times 1\)
+vector:
 \begin{equation}
     softmax(z)_{i} = \frac{e^{z_{i}}}{\sum_{j=1}^{n} e^{z_{j}}}
 \end{equation}
@@ -241,6 +244,8 @@ This function is implemented the categorical output layer like so:
         Matrex.divide(exp, Matrex.sum(exp))
     end
 \end{lstlisting}
+
+% show forward propagation function across the networks
 
 
 

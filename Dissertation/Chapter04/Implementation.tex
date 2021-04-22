@@ -48,15 +48,15 @@ I could create my own API to meet my ends.
 \subsection{Neural Network Implementation}
 In order to create a distributed neural network. I first needed to create a
 basic feed forward network that could operate on a single machine. This network
-didn't need to be fully featured, its just a means to make an objectively
-comparative performance between RingTMP and a generic parameter server.
-Therefore only 2 types of layers were implemented, the hidden layer and the
-output layer. The hidden layer is a generic dense layer similar to the kind you
-would find in any other neural network library. The output layer performs
-similarly to the hidden layer with the key difference that its always the final
-layer and outputs the activations as probabilities. Within this section I will
-explain in more detail how the neural network was implemented from scratch and
-the mathematics behind its function.
+doesn't need to be fully featured, its just a means to make an objective
+comparison between RingTMP and a generic parameter server. Therefore only 2
+types of layers were implemented, the hidden layer and the output layer. The
+hidden layer is a generic dense layer similar to the kind you would find in any
+other neural network library. The output layer performs similarly to the hidden
+layer with the key difference that its always the final layer in a network and
+outputs the activations as probabilities. Within this section I will explain in
+more detail how the neural network was implemented from scratch and the
+mathematics behind its function.
 
 % creating a network should go here first
 \subsubsection{Initialisation}
@@ -64,7 +64,7 @@ Neural networks are composed of layers, while conceptually layers are
 composed of neurons, they're practically implemented with two components. A
 weights matrix and a bias vector. As I have already mentioned in this network
 there are two types of layers, hidden layers and output layers. We need to label
-each layer with its type, so we know how to perform the forward and
+each layer with its type, so we know how to perform forward and
 backpropagation. Therefore we can describe a layer as the tuple:
 \begin{lstlisting}[numbers=none,frame=none]
     {layer_type, weights, bias}
@@ -72,26 +72,23 @@ backpropagation. Therefore we can describe a layer as the tuple:
 
 Placing several of these tuples in a list creates a network:
 \begin{lstlisting}[numbers=none,frame=none]
-  [{:hidden_layer, weights_1, bias_1},
-   {:hidden_layer, weights_2, bias_2},
-   {:output_layer, weights_3, bias_3}]
+  network = [{:hidden_layer, weights_1, bias_1},
+                {:hidden_layer, weights_2, bias_2},
+                {:output_layer, weights_3, bias_3}]
 \end{lstlisting}
 
-The weights and biases have different dimensions depending on the layers input size
-and output size. A layer might take an activations vector with a size of \(m\) and
-output a size of \(n\). The layer would hold a \(n \times m\) matrix
-and the dimensions of the bias would be \(n \times 1\). The
-output size of one layer must be the input size of the next layer, else the
-network will fail to function.
-
-Initialising the biases is simple, as biases have the function of an intercept
-in a linear equation, they can be initialised to 0. The trivial code is below:
+The weights and biases have different dimensions depending on the layers input
+size and output size. A layer might take an activations vector with a size of
+\(m\) and output a size of \(n\). The layer would hold a \(n \times m\) matrix
+and the dimensions of the bias would be \(n \times 1\). The output size of one
+layer must be the input size of the next layer. Initialising the biases is
+simple, as biases have the function of an intercept in a linear equation, they
+can be initialised to 0. The trivial code is below:
 \begin{lstlisting}
   defp initialise_bias(col) do
     Matrex.zeros(col, 1)
   end
-  \end{lstlisting} 
-
+\end{lstlisting} 
 Weights are more complex. Each layer is initialised with random values from a
 uniform distribution, the shape of the uniform distribution is dependant upon
 the size of the input and output layers of the neural network. The type of
@@ -110,8 +107,8 @@ from a normal distribution with a mean of 0 but has the variance of \( 1/N \)
 where \(N\) is \( (inputSize + outputSize) / 2 \).
 
 However in practice training the model often failed with He initialisations.
-This was because of what is know as the 'Dying ReLU Problem'. Which is when the
-elements of the z vector of a layer are negative, the ReLU activation function
+This was because of what is known as the 'Dying ReLU Problem'. Which is when the
+elements of a z vector are negative, the ReLU activation function
 will return a zero meaning no learning is taking place. Once a neuron becomes
 dead its unlikely it will be revived as the function is piecewise and provides
 no slope for recovery such as a Leaky ReLU or a sigmoid function. To remedy this
@@ -135,62 +132,42 @@ parameters. This is part of the code which initialises the matrices in the layer
     {col, :xavier, new_state, [val | acc]}
   end
 \end{lstlisting}
+You can find the wider context for this code snippet in code listing in the Appendix 1. ~\ref{network_initialisation} 
 
-you can find the wider context for this code snippet in code listing in the Appendix 1. ~\ref{network_initialisation} 
 
 \subsubsection{Forward Propagation}
+In forward propagation we give an input vector and an output vector is returned.
+In order for that to happen the input vector is passed through each layer, each
+time being transformed by the weights, bias and activation function of that
+layer. The input to the network could be measurements describing a flower (like
+in the setosa dataset), the output layer could describe which species. More
+broadly put, the input described the features, and the output predicts the
+categories to which those features belong.
 
-% need to put this stuff earlier its already been explained
-Neural networks are composed of layers, each layer is composed of neurons.
-Numerical inputs are inserted through the input layer, forward propagate through
-the network and push numerical results to the output layer. For our purposes
-each neuron in the output layer represents a different category, the value of
-that neuron is the probability the given input belongs to that category.
-
-Each neuron holds a value, called an activation. Each layer has a bias and a
-collection of neurons. Between the layers every neuron in one layer connects to
-every other neuron in the next layer, every connection has an associated value
-called a weight. To calculate the weight of a single neuron in the next layer
-you must multiply the activations of the previous layer with the weights
-connected to the neuron in question, then sum the values, add the bias, then
-apply the activation function to that value. To explain more visually the
-process and mathematics more visually, see the diagram below of the interaction
-between two layers each with two nodes.
-
-<<REDO THIS BIT ABOVE>>
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.6\textwidth]{two_neuron_network_1}
-\end{figure}
-
-\begin{equation}
-    \begin{aligned}
-        z_{21} &= a_{11}w_{11} + a_{12}w_{12} + b_{1} \, \, \, \, \, \, \, z_{22} = a_{11}w_{21} + a_{12}w_{22} + b_{2} \\
-        a_{21} &= relu(z_{21}) \, \, \, \, \, \, \, a_{22} = relu(z_{22}) 
-    \end{aligned}
-\end{equation}
-
-
-As networks become larger using this notation above becomes cumbersome. So we
-use matrices to simplify the situation. Where \(X\) is the input matrix, \(W\)
-is the weights, \(B\) is the bias, \(activationFunc(x)\) is the activation function and finally \(A\) is the output activation.
-
+On a layer level forward propagation is performed by taking the input vector
+multiplying it with the weights matrix, after which you add the bias and apply
+the activation function. The output of this is then passed to the next layer, or
+if its the last layer, output as the network prediction result. The generic
+mathematics of a forward function is described below in this linear equation
+where  \(X\) is the input matrix, \(W\) is the weights, \(B\) is the bias,
+\(activationFunc(x)\) is the activation function and finally \(A\) is the output
+activation:
 \begin{equation}
     \begin{aligned}
         X = \begin{bmatrix}
-            a_{11} \\
-            a_{12}
+            x_{1} \\
+            x_{2} \\
+            x_{3}
         \end{bmatrix} \, \, \, \, \, \, \,
         W &= \begin{bmatrix}
-            w_{11} & w_{12} \\
-            w_{21} & w_{22}
+            w_{11} & w_{12} & w_{13} \\
+            w_{21} & w_{22} & w_{23}
         \end{bmatrix} \, \, \, \, \, \, \,
         B = \begin{bmatrix}
             b_{1} \\
             b_{2}
         \end{bmatrix} \\[10pt]
-        A &= activationFunc( W^{T}X + B)
+        A &= activationFunc( W^{T}X + B )
     \end{aligned}
 \end{equation}
 
@@ -207,8 +184,9 @@ action in the hidden layer is implemented like so: \footnote{The pipe operator
 \lstinline{|>} transforms the function \lstinline{val_a |> a_function(val_b)}
 into \lstinline{a_function(val_a, val_b)}}
 \begin{lstlisting}
+defmodule HiddenLayer
   def forward(previous_activation, weights, bias) do
-    weights|> Matrex.transpose()
+    weights |> Matrex.transpose()
     |> Matrex.dot(previous_activation)
     |> Matrex.add(bias)
     |> relu()
@@ -219,6 +197,8 @@ into \lstinline{a_function(val_a, val_b)}}
         fn value, _index -> if value > 0, do: value, else: 0 end
     )
   end
+
+  ...
 \end{lstlisting}
 
 The output layer uses a more complex activation function, the softmax function,
@@ -231,22 +211,52 @@ vector:
 
 This function is implemented the categorical output layer like so:
 \begin{lstlisting}
-    def forward(previous_activation, weights, bias) do
-        weights|> Matrex.transpose()
-        |> Matrex.dot(previous_activation)
-        |> Matrex.add(bias)
-        |> softmax()
-    end
+defmodule CategoricalOutputLayer do
+  def forward(previous_activation, weights, bias) do
+      weights |> Matrex.transpose()
+      |> Matrex.dot(previous_activation)
+      |> Matrex.add(bias)
+      |> softmax()
+  end
 
-    defp softmax(z_vector) do
-        stabilised_vec = Matrex.subtract(z_vector, Matrex.max(z_vector))
-        exp = Matrex.apply(stabilised_vec, :exp)
-        Matrex.divide(exp, Matrex.sum(exp))
-    end
+  defp softmax(z_vector) do
+      stabilised_vec = Matrex.subtract(z_vector, Matrex.max(z_vector))
+      exp = Matrex.apply(stabilised_vec, :exp)
+      Matrex.divide(exp, Matrex.sum(exp))
+  end
+
+  ...
 \end{lstlisting}
 
 % show forward propagation function across the networks
+Propagating forward through the layers happens like so, using the output of one
+layer as the input to the next, performing a slightly different forward action
+depending on the layer:
+\begin{lstlisting}
+defmodule FeedForwardNetwork.Forward do
+  def forward(network, input_vector) do
+    Enum.reduce(network, input_vector, fn layer, acc -> forward_layer(layer, acc) end)
+  end
 
+  defp forward_layer({:hidden_layer, weights, bias}, prev_activation) do
+    {_z_vec, activation} = HiddenLayer.forward(prev_activation, weights, bias, [])
+    activation
+  end
+
+  defp forward_layer({:output_layer, weights, bias}, prev_activation) do
+    CategoricalOutputLayer.forward(prev_activation, weights, bias, [])
+  end
+
+  ...
+\end{lstlisting}
+
+
+\subsubsection{Cost Function}
+
+
+
+
+\subsubsection{Back Propagation}
 
 
 

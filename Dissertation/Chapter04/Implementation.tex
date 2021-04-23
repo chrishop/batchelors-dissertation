@@ -229,9 +229,11 @@ defmodule CategoricalOutputLayer do
 \end{lstlisting}
 
 % show forward propagation function across the networks
-Propagating forward through the layers happens like so, using the output of one
+Propagating forward through the layers happens by using the output of one
 layer as the input to the next, performing a slightly different forward action
 depending on the layer:
+
+PUT IN APPENDIX
 \begin{lstlisting}
 defmodule FeedForwardNetwork.Forward do
   def forward(network, input_vector) do
@@ -329,89 +331,8 @@ Combining these with the chain rule (\(\frac{\partial c}{\partial z} = \frac{\pa
     \end{aligned}
 \end{equation}
 
-Now we have \(\frac{\partial c}{\partial z}\) we can find the cost w.r.t the
-bias \(\frac{\partial c}{\partial b}\) (where \( a_{j}^{L-1} \) is the activation from the previous layer):
-\begin{equation}
-    \begin{aligned}
-        z_{i} &= w_{ij}^{T}a_{j}^{L-1} + b_{i}\\
-        \frac{\partial z_{i}}{\partial b_{i}} &= 1\\[2em]
-        \frac{\partial c}{\partial b_{i}} &= \frac{\partial c}{\partial z_{i}} \cdot \frac{\partial z_{i}}{\partial b_{i}}\\
-        &= a_{i} - t_{i} \cdot 1
-    \end{aligned}
-\end{equation}
-
-And the cost w.r.t the weights \(\frac{\partial c}{\partial w}\) (where \(
-a_{j}^{L-1} \) is the activation from the previous layer):
-\begin{equation}
-    \begin{aligned}
-        z_{i} &= w_{ij}^{T}a_{j} + b_{i}\\
-        \frac{\partial z_{i}}{\partial w_{ij}} &= a_{j}^{L-1}\\[2em]
-        \frac{\partial c}{\partial w_{ij}} &= \frac{\partial c}{\partial z_{i}} \cdot \frac{\partial z_{i}}{\partial w_{ij}}\\
-        &= (a_{i} - t_{i}) \cdot a_{j}^{L-1}
-    \end{aligned}
-\end{equation}
-
-We also need to find the remaining error and use that to backpropagate the errors further:
-\begin{equation}
-    \begin{aligned}
-        z_{i} &= w_{ij}^{T}a_{j}^{L-1} + b_{i}\\
-        \frac{\partial z_{i}}{\partial a_{j}^{L-1}} &= w_{ij}\\[2em]
-        \frac{\partial c}{\partial a_{j}^{L-1}} &= \frac{\partial c}{\partial z_{i}} \cdot \frac{\partial z_{i}}{\partial a_{j}^{L-1}}\\
-        &= \sum_{i} w_{ij} \cdot (a_{i} - t_{i}) 
-    \end{aligned}
-\end{equation}
-
-We use the remaining error from the output layer to adjust the weights and bias
-of the previous layer, but first we need to find the ReLU function w.r.t \(z\):
-\begin{equation}
-    \begin{aligned}
-        a_{i} &= max(0,z_{i})\\[2em]
-        \frac{\partial a_{i}^{L-1}}{\partial z_{i}} &= 
-        \begin{cases}
-            z_{i} > 0 & 1 \\
-            else & 0
-        \end{cases}
-    \end{aligned}
-\end{equation}
-
-Hidden Layer bias
-% hidden layer bias
-\begin{equation}
-    \begin{aligned}
-        z_{i} &= b_{i} + \sum_{j} w_{ij}a_{j}^{L-2} \\
-        \frac{\partial z_{i}}{\partial b_{i}} &= 1\\[2em]
-        \frac{\partial c}{\partial b_{i}} &= \frac{\partial c}{\partial a_{i}^{L-1}} \cdot \frac{\partial a_{i}^{L-1}}{\partial z_{i}} \cdot  \frac{\partial z_{i}}{\partial b_{i}} \\
-                                          &= \frac{\partial c}{\partial a_{i}^{L-1}} \cdot \frac{\partial a_{i}^{L-1}}{\partial z_{i}} \cdot  1
-    \end{aligned}
-\end{equation}
-
-Hidden Layer Weights
-% hidden layer weights
-\begin{equation}
-    \begin{aligned}
-        z_{i} &= b_{i} + \sum_{j} w_{ij}a_{j}^{L-2} \\
-        \frac{\partial z_{i}}{\partial w_{ij}} &= a_{j}^{L-2}\\[2em]
-        \frac{\partial c}{\partial w_{ij}} &= \frac{\partial c}{\partial a_{i}^{L-1}} \cdot \frac{\partial a_{i}^{L-1}}{\partial z_{i}} \cdot  \frac{\partial z_{i}}{\partial w_{ij}} \\
-                                          &= \frac{\partial c}{\partial a_{i}^{L-1}} \cdot \frac{\partial a_{i}^{L-1}}{\partial z_{i}} \cdot  a_{j}^{L-2}
-    \end{aligned}
-\end{equation}
-% hidden layer remaining error
-Remaining Error
-\begin{equation}
-    \begin{aligned}
-        z_{i} &= b_{i} + \sum_{j} w_{ij}a_{j}^{L-2} \\
-        \frac{\partial z_{i}}{\partial a_{j}^{L-2}} &= w_{ij}\\[2em]
-        \frac{\partial c}{\partial a_{j}^{L-2}} &= \frac{\partial c}{\partial a_{i}^{L-1}} \cdot \frac{\partial a_{i}^{L-1}}{\partial z_{i}} \cdot  \frac{\partial z_{i}}{\partial a_{j}^{L-2}} \\
-                                          &= \frac{\partial c}{\partial a_{i}^{L-1}} \cdot \frac{\partial a_{i}^{L-1}}{\partial z_{i}} \cdot  \sum_{i} w_{ij}
-    \end{aligned}
-\end{equation}
-
-
-<<rewrite in linear equations>>
-
 The rest of the calculations will be in linear equations as its closer to the
-implementation as easier to follow.
-Where:
+implementation as easier to follow, where:
 \begin{itemize}
     \item \( T \) is a \( m \times 1 \) target output
     \item \( A \) is a  \( m \times 1 \) output activation
@@ -489,7 +410,7 @@ Hidden Layer bias w.r.t cost:
         Z &= W^{T}A_{L-2} + B\\
         \frac{\partial Z}{\partial B} &= 1\\[2em]
         \frac{\partial c}{\partial B} &= \frac{\partial c}{\partial Z} \cdot \frac{\partial Z}{\partial B}\\
-                                      &= \frac{\partial c}{\partial A_{L-1}} \cdot \frac{\partial A_{L-1}}{\partial Z} \cdot 1
+                                      &= \frac{\partial c}{\partial Z} \cdot 1
     \end{aligned}
 \end{equation}
 
@@ -513,10 +434,146 @@ Hidden Layer error w.r.t cost:
     \end{aligned}
 \end{equation}
 
-The propagation continues until all the hidden layers have been altered.
+We use these derivatives to change the values of the weights and biases, however
+using them on their own creates too much change in the network causing it to
+take too large steps, often resulting in the better solutions being missed.
+Therefore we apply a learning rate, a scalar value which forces the model to take smaller steps.
+We use the learning rate like so:
+\begin{equation}
+    \begin{aligned}
+        \Delta B = \frac{\partial c}{\partial B} \cdot \text{learning rate}\\[1em]
+        \Delta W = \frac{\partial c}{\partial W} \cdot \text{learning rate} 
+    \end{aligned}
+\end{equation}
 
+In my code you can see that I use the exact same equations as in the mathematics.
+In the output layer:
+\begin{lstlisting}
+defmodule CategoricalOutputLayer do
 
+  def back(activation, prev_activation, weights, bias, target_activation, opts \\ []) do
+    cost_wrt_z = Matrex.subtract(target_activation, activation)
 
+    weight_delta =
+      Matrex.dot_nt(prev_activation, cost_wrt_z)
+      |> Matrex.multiply(Keyword.get(opts, :learning_rate, 1.0))
+
+    bias_delta = cost_wrt_z |> Matrex.multiply(Keyword.get(opts, :learning_rate, 1.0))
+
+    remaining_error = Matrex.dot(weights, cost_wrt_z)
+
+    new_weights = Matrex.add(weights, weight_delta, 1, 1)
+    new_bias = Matrex.add(bias, bias_delta)
+    {new_weights, new_bias, remaining_error}
+  end
+  ...
+\end{lstlisting}
+
+And in the hidden layer:
+\begin{lstlisting}[basicstyle=\linespread{0.8}\ttfamily\footnotesize]
+defmodule HiddenLayer do
+
+  def back(z_vec, prev_activation, weights, bias, remaining_error, opts \\ []) do
+    learning_rate = Keyword.get(opts, :learning_rate, 1.0)
+    a_wrt_z = Matrex.apply(z_vec, fn value, _index -> if value > 0, do: 1, else: 0 end)
+    cost_wrt_z = Matrex.multiply(remaining_error, a_wrt_z)
+
+    weight_delta =
+    prev_activation
+    |> Matrex.dot_nt(cost_wrt_z)
+    |> Matrex.multiply(learning_rate)
+
+    bias_delta = cost_wrt_z |> Matrex.multiply(learning_rate)
+
+    remaining_error = Matrex.dot(weights, cost_wrt_z)
+    new_weights = weights |> Matrex.add(weight_delta, 1, 1)
+    new_bias = Matrex.add(bias, bias_delta)
+
+    {new_weights, new_bias, remaining_error}
+  end
+  ...
+\end{lstlisting}
+
+\subsection{Parameter Server}
+The Parameter Server is currently the most popular way to distribute a machine
+learning task. Therefore I need to create one in order to compare it with my
+solution. My parameter server functions by iteratively sending the batches of
+training pairs with the parameters then when all the workers have responded the
+parameters from each worker are averaged. This cycle repeats until the network
+is trained.
+
+Connecting the workers to the server is quite simple in Elixir, here is an
+example using the elixir language shell, iex:
+\begin{lstlisting}[basicstyle=\linespread{0.8}\ttfamily\footnotesize,numbers=none]
+Machine 1
+$ iex --name foo@192.168.1.11 --cookie shared_string
+
+Machine 2
+$ iex --name bar@192.168.1.12 --cookie shared_string
+iex(bar@192.168.1.12)> Node.ping(:"foo@192.168.1.11")
+:pong
+\end{lstlisting}
+
+In elixir there is a concept of nodes which each node has its own name in the
+format of \lstinline{<application>@<local_ip>} you can have multiple nodes on a
+single machine, but if you need to communicate with nodes on another machine,
+you must set a cookie and ensure the cookie is the same on both the machines. In
+the example above we see one node messaging another one to get a response.
+
+We can also use this connection to send commands to a process within another
+node, have it do work for us and then respond with the result:
+\begin{lstlisting}[basicstyle=\linespread{0.8}\ttfamily\footnotesize]
+def send_to_worker(
+    sup, {train_input, train_label}}, network, opts) do
+
+  # sup = {TaskSupervisor, node} pair
+
+  sup
+  |> Task.Supervisor.async(
+     FeedForwardNetwork.Back,
+     :back_once,
+     [train_inputs, train_labels, network, opts]
+  )
+end
+\end{lstlisting}
+The \lstinline{TaskSupervisor} is a named process, the \lstinline{node} is a
+variable holding the atom describing the node e.g.
+(\lstinline{workerone@192.168.1.14}) this indicates the specific process you
+want to send the task to. Within the async function the model, function and
+function arguments are expressed. This asynchronously returns a task struct
+which can be \lstinline{Task.await(task)} awaited upon. This means a batch can
+be sent to each worker node at the same time and awaited on for the result. Like
+in the code below:
+\begin{lstlisting}[basicstyle=\linespread{0.8}\ttfamily\footnotesize]
+  def send_to_workers(chunk, network, opts \\ []) do
+    chunk
+    |> Enum.map(
+      fn sup_train_pair ->
+        send_to_worker(sup_train_pair, network, opts)
+      end)
+    |> Enum.map(fn t -> Task.await(t) end)
+  end
+\end{lstlisting}
+Each chunk contains elements destined for each node. These are asynchronously
+sent and awaited upon until all of them have sent back their updated versions of
+the network. These are then averaged and become the new parameters of the
+parameter server.
+\begin{lstlisting}[basicstyle=\linespread{0.8}\ttfamily\footnotesize]
+  def avg_networks(networks) do
+    size = Enum.count(networks)
+
+    networks
+    |> Enum.reduce(
+      fn network, sum_acc ->
+        sum_network(network, sum_acc)
+      end)
+    |> divide_network(size)
+  end
+\end{lstlisting}
+
+For the complete code look in the code appendix .... <PUT IN CODE APPENDIX>
+
+\subsection{RingTMP}
 
 
 % put equations here
@@ -527,7 +584,6 @@ The propagation continues until all the hidden layers have been altered.
 % $$a_{2} = relu(z)$$
 
 % $$z = a_{1}w + b$$
-
 % \begin{figure}[h]
 %     \centering
 %     \includegraphics[width=0.6\textwidth]{simplest_neural_network_1}

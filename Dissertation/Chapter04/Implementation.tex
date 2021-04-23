@@ -250,13 +250,271 @@ defmodule FeedForwardNetwork.Forward do
   ...
 \end{lstlisting}
 
-
 \subsubsection{Cost Function}
+A neural network is trained by using examples of correct classifications based
+on given data. The data is input into the network, and the network attempts to
+label the data correctly. The networks prediction is compared to the correct
+classification using a cost function, this gives a single value representation
+describing how close or far the network was to the correct classification. A
+perfect classification will result in a score of 0, the more wrong the network
+prediction is the larger the cost produced by the cost function. The cost 
+function used in this network is categorical cross entropy, which allows for
+multi class classification. It takes two inputs, an output vector \(y\) of the network
+(its prediction), and the one hot encoded vector \(t\) of the target classification:
+\begin{equation}
+    cost(t, y) = - \sum_{i}^{C} t_{i}log(y_{i})
+\end{equation}
 
+This implementation is similar, but removed redundant computation in the cases
+where \(t_{i} = 0\) the cost will always be 0. Here we also catch situations
+where the activation underflows to 0, which would result in a math error as
+\(log(0)\) is undefined. For the full code example see the code listing
+~\ref{cost_function} in the appendix.
+\begin{lstlisting}
+defmodule CategoricalOutputLayer
+  def loss(activation, target_activation) do
+    target_position = get_target_category(target_activation)
 
+    activation
+    |> Matrex.at(target_position, 1)
+    |> (fn x ->
+          if x == 0.0, do: 100, else: -:math.log(x) end
+        end).()
+  end
+
+  ...
+\end{lstlisting}
 
 
 \subsubsection{Back Propagation}
+The result of the cost function represents the error within the network,
+backpropagation adjusts the weights and biases to minimise the loss within the
+network. Meaning that if the same input was given to the network again after
+backpropagation, the output would be closer to the target, than before
+backpropagation had occurred. The changes to the weights and bias of each layer
+can be calculated by using the chain rule, to discover the relationship between
+the weights and biases with respect to the loss.
+
+To calculate the change in weights and biases in the output layer, we first need
+to find the derivative of the cost function w.r.t the network output and the
+derivative of the softmax function w.r.t \(z\).
+
+\begin{equation}
+    \begin{aligned}
+        c &= - \sum_{i}^{c} t_{i}log(a_{i}) \\
+        \frac{\partial c}{\partial a} &= - \sum_{i}^{c} \frac{t_{i}}{a_{i}}
+    \end{aligned}
+\end{equation}
+
+Finding the derivative of the softmax is a little more complex:
+\begin{equation}
+    \begin{aligned}
+        &       &   a_{j} &= \frac{e^{z_{j}}}{\sum_{k=1}^{N} e^{z_{k}}} \\
+        &\text{applying quotient rule (for brevity} \sum = \sum_{k=1}^{N} e^{z_{k}} \text{)}   &   \frac{\partial a_{i}}{\partial z_{j}} &= \frac{e^{z_{i}} \sum - e^{z_{j}}e^{z_{i}}}{\sum^{2}}\\[2em]
+        &\text{if } i=j \text{ then it can be factorised}     &   \frac{\partial a_{i}}{\partial z_{j}} &= \frac{e^{z_{i}}}{\sum} \frac{\sum - e^{z_{j}}}{\sum}\\
+        &\text{substituting in softmax}     &   \frac{\partial a_{i}}{\partial z_{j}} &= a_{i} (1 - a_{j})\\[2em]
+        &\text{if } i \neq j \text{ then it can be factorised}      &   \frac{\partial a_{i}}{\partial z_{j}} &= \frac{0 - e^{z_{j}}e^{z_{i}}}{\sum^{2}}\\
+        &\text{substituting in softmax}     &   \frac{\partial a_{i}}{\partial z_{j}} &= -a_{j}a_{i}
+    \end{aligned}
+\end{equation}
+
+Combining these with the chain rule (\(\frac{\partial c}{\partial z} = \frac{\partial c}{\partial a} \cdot \frac{\partial a}{\partial z}\)):
+\begin{equation}
+    \begin{aligned}
+        \frac{\partial c}{\partial z_{i}} &= \sum_{k}^{C} \frac{\partial c}{\partial a_{k}} \frac{a_{k}}{z_{i}}\\
+        &= \frac{\partial c}{\partial a_{i}} \frac{a_{i}}{z_{i}} - \sum_{k \neq i} \frac{\partial c}{\partial a_{k}} \frac{a_{k}}{z_{i}}\\
+        &= - t_{i}(1 - a_{i}) + \sum_{k \neq i} t_{k}a_{i}\\
+        &= - t_{i} + a_{i} \sum_{k} t_{k}\\
+        &= a_{i} - t_{i}
+    \end{aligned}
+\end{equation}
+
+Now we have \(\frac{\partial c}{\partial z}\) we can find the cost w.r.t the
+bias \(\frac{\partial c}{\partial b}\) (where \( a_{j}^{L-1} \) is the activation from the previous layer):
+\begin{equation}
+    \begin{aligned}
+        z_{i} &= w_{ij}^{T}a_{j}^{L-1} + b_{i}\\
+        \frac{\partial z_{i}}{\partial b_{i}} &= 1\\[2em]
+        \frac{\partial c}{\partial b_{i}} &= \frac{\partial c}{\partial z_{i}} \cdot \frac{\partial z_{i}}{\partial b_{i}}\\
+        &= a_{i} - t_{i} \cdot 1
+    \end{aligned}
+\end{equation}
+
+And the cost w.r.t the weights \(\frac{\partial c}{\partial w}\) (where \(
+a_{j}^{L-1} \) is the activation from the previous layer):
+\begin{equation}
+    \begin{aligned}
+        z_{i} &= w_{ij}^{T}a_{j} + b_{i}\\
+        \frac{\partial z_{i}}{\partial w_{ij}} &= a_{j}^{L-1}\\[2em]
+        \frac{\partial c}{\partial w_{ij}} &= \frac{\partial c}{\partial z_{i}} \cdot \frac{\partial z_{i}}{\partial w_{ij}}\\
+        &= (a_{i} - t_{i}) \cdot a_{j}^{L-1}
+    \end{aligned}
+\end{equation}
+
+We also need to find the remaining error and use that to backpropagate the errors further:
+\begin{equation}
+    \begin{aligned}
+        z_{i} &= w_{ij}^{T}a_{j}^{L-1} + b_{i}\\
+        \frac{\partial z_{i}}{\partial a_{j}^{L-1}} &= w_{ij}\\[2em]
+        \frac{\partial c}{\partial a_{j}^{L-1}} &= \frac{\partial c}{\partial z_{i}} \cdot \frac{\partial z_{i}}{\partial a_{j}^{L-1}}\\
+        &= \sum_{i} w_{ij} \cdot (a_{i} - t_{i}) 
+    \end{aligned}
+\end{equation}
+
+We use the remaining error from the output layer to adjust the weights and bias
+of the previous layer, but first we need to find the ReLU function w.r.t \(z\):
+\begin{equation}
+    \begin{aligned}
+        a_{i} &= max(0,z_{i})\\[2em]
+        \frac{\partial a_{i}^{L-1}}{\partial z_{i}} &= 
+        \begin{cases}
+            z_{i} > 0 & 1 \\
+            else & 0
+        \end{cases}
+    \end{aligned}
+\end{equation}
+
+Hidden Layer bias
+% hidden layer bias
+\begin{equation}
+    \begin{aligned}
+        z_{i} &= b_{i} + \sum_{j} w_{ij}a_{j}^{L-2} \\
+        \frac{\partial z_{i}}{\partial b_{i}} &= 1\\[2em]
+        \frac{\partial c}{\partial b_{i}} &= \frac{\partial c}{\partial a_{i}^{L-1}} \cdot \frac{\partial a_{i}^{L-1}}{\partial z_{i}} \cdot  \frac{\partial z_{i}}{\partial b_{i}} \\
+                                          &= \frac{\partial c}{\partial a_{i}^{L-1}} \cdot \frac{\partial a_{i}^{L-1}}{\partial z_{i}} \cdot  1
+    \end{aligned}
+\end{equation}
+
+Hidden Layer Weights
+% hidden layer weights
+\begin{equation}
+    \begin{aligned}
+        z_{i} &= b_{i} + \sum_{j} w_{ij}a_{j}^{L-2} \\
+        \frac{\partial z_{i}}{\partial w_{ij}} &= a_{j}^{L-2}\\[2em]
+        \frac{\partial c}{\partial w_{ij}} &= \frac{\partial c}{\partial a_{i}^{L-1}} \cdot \frac{\partial a_{i}^{L-1}}{\partial z_{i}} \cdot  \frac{\partial z_{i}}{\partial w_{ij}} \\
+                                          &= \frac{\partial c}{\partial a_{i}^{L-1}} \cdot \frac{\partial a_{i}^{L-1}}{\partial z_{i}} \cdot  a_{j}^{L-2}
+    \end{aligned}
+\end{equation}
+% hidden layer remaining error
+Remaining Error
+\begin{equation}
+    \begin{aligned}
+        z_{i} &= b_{i} + \sum_{j} w_{ij}a_{j}^{L-2} \\
+        \frac{\partial z_{i}}{\partial a_{j}^{L-2}} &= w_{ij}\\[2em]
+        \frac{\partial c}{\partial a_{j}^{L-2}} &= \frac{\partial c}{\partial a_{i}^{L-1}} \cdot \frac{\partial a_{i}^{L-1}}{\partial z_{i}} \cdot  \frac{\partial z_{i}}{\partial a_{j}^{L-2}} \\
+                                          &= \frac{\partial c}{\partial a_{i}^{L-1}} \cdot \frac{\partial a_{i}^{L-1}}{\partial z_{i}} \cdot  \sum_{i} w_{ij}
+    \end{aligned}
+\end{equation}
+
+
+<<rewrite in linear equations>>
+
+The rest of the calculations will be in linear equations as its closer to the
+implementation as easier to follow.
+Where:
+\begin{itemize}
+    \item \( T \) is a \( m \times 1 \) target output
+    \item \( A \) is a  \( m \times 1 \) output activation
+    \item \( W \) is a \( n \times m \) weights matrix
+    \item \( B \) is a \( m \times 1 \) bias
+    \item \( Z \) is a \( m \times 1 \) sum of the matrix multiplication and bias
+    \item \(A^{L-1} \) is a \( n \times 1 \) activation of the previous layer
+\end{itemize}
+
+Output Layer bias w.r.t cost:
+\begin{equation}
+    \begin{aligned}
+        Z &= W^{T}A_{L-1} + B\\
+        \frac{\partial Z}{\partial B} &= 1\\[2em]
+        \frac{\partial c}{\partial B} &= \frac{\partial c}{\partial Z} \cdot \frac{\partial Z}{\partial B}\\
+        \frac{\partial c}{\partial B} &= A - T \cdot 1
+    \end{aligned}
+\end{equation}
+
+Output Layer weights w.r.t cost:
+\begin{equation}
+    \begin{aligned}
+        Z &= W^{T}A_{L-1} + B\\
+        \frac{\partial Z}{\partial W} &= A_{L-1}\\[2em]
+        \frac{\partial c}{\partial W} &= \frac{\partial Z}{\partial W} \cdot \frac{\partial c}{\partial Z} \\
+        \frac{\partial c}{\partial W} &= A_{L-1} \cdot (A - T)^{T}
+    \end{aligned}
+\end{equation}
+
+Output layer remaining error:
+\begin{equation}
+    \begin{aligned}
+        Z &= W^{T}A_{L-1} + B\\
+        \frac{\partial Z}{\partial A_{L-1}} &= W\\[2em]
+        \frac{\partial c}{\partial A_{L-1}} &= \frac{\partial Z}{\partial A_{L-1}} \cdot \frac{\partial c}{\partial Z}\\
+        \frac{\partial c}{\partial A_{L-1}} &= W \cdot (A - T)
+    \end{aligned}
+\end{equation}
+
+We use the remaining error from the output layer to calculate the weights and
+biases w.r.t the cost in the hidden layers:
+\begin{itemize}
+    \item \( \frac{\partial c}{\partial A_{L-1}} \) is a \( n \times 1 \) remaining error vector 
+    \item \( A_{L-1} \) is a  \( n \times 1 \) output activation of this layer
+    \item \( W \) is a \( l \times n \) weights matrix of this layer
+    \item \( B \) is a \( n \times 1 \) bias of this layer
+    \item \( Z \) is a \( n \times 1 \) sum of the matrix multiplication and bias
+    \item \(A^{L-2} \) is a \( l \times 1 \) activation of the previous layer
+\end{itemize}
+
+The differential of the ReLU function.
+\begin{equation}
+    \begin{aligned}
+        A_{L-1} &= max(0,Z)\\[2em]
+        \frac{\partial A_{L-1}}{\partial Z} &= 
+        \begin{cases}
+            z_{i} > 0 & 1 \\
+            else & 0
+        \end{cases}
+    \end{aligned}
+\end{equation}
+
+This can be combined with \( \frac{\partial c}{\partial A_{L-1}} \) to make \(
+\frac{\partial c}{\partial Z} \) (\( \odot \) denotes element-wise
+multiplication):
+\begin{equation}
+    \begin{aligned}
+        \frac{\partial c}{\partial Z} &= \frac{\partial c}{\partial A_{L-1}} \odot \frac{\partial A_{L-1}}{\partial Z}\\
+    \end{aligned}
+\end{equation}
+
+Hidden Layer bias w.r.t cost:
+\begin{equation}
+    \begin{aligned}
+        Z &= W^{T}A_{L-2} + B\\
+        \frac{\partial Z}{\partial B} &= 1\\[2em]
+        \frac{\partial c}{\partial B} &= \frac{\partial c}{\partial Z} \cdot \frac{\partial Z}{\partial B}\\
+                                      &= \frac{\partial c}{\partial A_{L-1}} \cdot \frac{\partial A_{L-1}}{\partial Z} \cdot 1
+    \end{aligned}
+\end{equation}
+
+Hidden Layer weights w.r.t cost:
+\begin{equation}
+    \begin{aligned}
+        Z &= W^{T}A_{L-2} + B\\
+        \frac{\partial Z}{\partial W} &= A_{L-2}\\[2em]
+        \frac{\partial c}{\partial W} &= \frac{\partial Z}{\partial W} \cdot \frac{\partial c}{\partial Z}\\
+                                      &= A_{L-2} \cdot \frac{\partial c}{\partial Z}
+    \end{aligned}
+\end{equation}
+
+Hidden Layer error w.r.t cost:
+\begin{equation}
+    \begin{aligned}
+        Z &= W^{T}A_{L-2} + B\\
+        \frac{\partial Z}{\partial A_{L-2}} &= W\\[2em]
+        \frac{\partial c}{\partial A_{L-2}} &= \frac{\partial c}{\partial Z} \cdot \frac{\partial Z}{\partial A_{L-2}}\\
+                                      &= \frac{\partial c}{\partial Z} \cdot W
+    \end{aligned}
+\end{equation}
+
+The propagation continues until all the hidden layers have been altered.
+
 
 
 

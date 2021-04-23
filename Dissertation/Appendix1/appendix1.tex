@@ -1,6 +1,7 @@
 \section{Appendix 1}
 \subsubsection{Code Listings}
 \begin{lstlisting}[caption={Network Initialisation}, label={network_initialisation}]
+defmodule FeedForwardNetwork.DefineNetwork
   defp initialise_parameters(definition, initial_seed) do
     definition
     |> Enum.reduce(
@@ -64,4 +65,27 @@
 
   defp layer_to_init(:hidden_layer), do: :pos
   defp layer_to_init(:output_layer), do: :xavier
-  \end{lstlisting}
+end
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Cost Function}, label={cost_function}]
+  def loss(activation, target_activation) do
+    target_position = get_target_category(target_activation)
+
+    activation
+    |> Matrex.at(target_position, 1)
+    |> (fn x ->
+          if x == 0.0, do: 100, else: -:math.log(x) end
+        end).()
+  end
+
+  defp get_target_category(target_activation) do
+    {row, _col} = Matrex.size(target_activation)
+
+    Enum.map(1..row, fn x -> [x] end)
+    |> Matrex.new()
+    |> Matrex.multiply(target_activation)
+    |> Matrex.sum()
+    |> round()
+  end
+\end{lstlisting}

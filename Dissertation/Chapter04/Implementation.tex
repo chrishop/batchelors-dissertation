@@ -574,6 +574,105 @@ parameter server.
 For the complete code look in the code appendix .... <PUT IN CODE APPENDIX>
 
 \subsection{RingTMP}
+The main product of my project is the RingTMP network, the name is an acronym
+for \textit{Ring Topological Model Parallel}. Its called as such because it has
+a ring topology and the neural network model is split between the nodes. In
+RingTMP each node in the distributed network holds consecutive layers of the
+neural network, there are two types of node, the master node and the worker
+nodes. The master node holds the training and testing data. It also starts the
+forward propagation and back propagation process, while worker nodes receive
+messages from adjacent nodes which they process and then forward the message to
+the next node.
+
+\begin{figure}[h]
+    \includegraphics[width=0.3\textwidth]{ExampleNetwork}
+    \includegraphics[width=0.3\textwidth]{masternode}
+    \includegraphics[width=0.3\textwidth]{SingleNode}
+    \caption{
+            Left: An example network of RingTMP. The green node being the master node and the blue nodes being the worker nodes.
+            Centre: The architecture of the master node.
+            Right: The architecture of the worker node.
+        }
+\end{figure}
+
+Each batch of data follows the same path. It starts in the master node, a batch
+is forward propagated through the segment of the neural network being held
+locally. The intermediate result of that is send to the first worker node in the
+chain. Which uses the intermediate values to forward propagated through its
+neural network layers and send its results to the next node in the RingTMP
+network. This continues until the last worker node in the chain makes a
+prediction about the data given. This is then sent back to the master node which
+calculates the loss and sends that back to the worker. The worker then uses this
+to begin the backpropagation of errors back through the network. It first
+updates its own parameters based on the loss. Then passes back the remaining
+error back to the node before it until all the parameters have been updated.
+
+This is different to the parameter server in several important ways. First the
+model is split between the nodes, this means all thing being equal a larger
+model can be trained on a RingTMP network than on a non-model parallel parameter
+server. This is more of a useful feature for embedded devices where memory is at
+a premium. Using the example of the EfficientNetV2-L model, which contains 121
+million parameters. \cite{tan2021efficientnetv2} Estimating each of those to be
+a double precision value it would amount to almost a 1 Gigabyte of data,
+excluding the intermediate values stored in the RAM while performing
+calculations. A non-model parallel parameter server has to be able to hold all
+the variables in order for it to function, whereas in a RingTMP network the
+parameters can be distributed between the layers.
+
+Another major advantage is decreased communication between nodes. A non-model
+parallel parameter server will always send more data for a
+layer of the same size. This can be shown to be true thus.
+
+The amount of arbitrary units of data sent from a parameter server to a worker
+where \(n\) is the input size and \(m\) is the output size. Where \( m \geq 1\)
+and \( n \geq 1\) the this can be shown to be:
+\begin{equation}
+    \begin{aligned}
+        f(n,m) &= (n \cdot m) + m\\
+        f(n,m) &= m(n+1)
+    \end{aligned}
+\end{equation}
+The amount of arbitrary units of data sent from a RingTMP node to another node where \(m\) is
+the input size and \(n\) is the output size this can be shown to be:
+\begin{equation}
+    g(n,m) = 2m
+\end{equation}
+substituting \(g(n,m)\) into \(f(n,m)\):
+\begin{equation}
+    \begin{aligned}
+        f(n,m) &= \frac{g(n,m)}{2} \cdot (n+1)\\[1em]
+        f(n,m) &= g(n,m) \cdot \frac{n+1}{2}
+    \end{aligned}
+\end{equation}
+Given that \(n\) must be at least 1,  \( \frac{n+1}{2} \) must also be at least
+1. A number multiplied by 1 or greater will always be greater than or equal to
+the initial value, we can say that the parameter server will always communicate
+as much or more information between nodes than RingTMP.
+
+A simple example of this can be given to show the reduction in communication
+between nodes. Take a two layer neural network the first layer having 784 input
+nodes and 50 output nodes, and the second layer had 50 input nodes and 10 output
+nodes. A worker sending updated weights back to a parameter server would have to
+communicate 39760 values (\( (784 \times 50) + (50 \times 10) = 39860\)).
+Whereas for the RingTMP model the same neural network split over two nodes would
+only need to communicate 120 values. Over 300 times less network communication.
+
+The final major advantage is the capacity for increased bandwidth between the
+nodes, which built into the structure of the network. In a parameter server
+model all workers connect to a single parameter server, so the network have a
+star topology. This means bandwidth of the network is only as large as the
+bandwidth of the parameter server, the relationship between the parameter server
+bandwidth with each worker and the number of nodes in inversely proportional
+(\(b = \frac{1}{x-1} where x \geq 2\)). With the RingTmp network all nodes have
+two connections one ahead, one behind in a ring topology. This means no single
+node will limit the bandwidth of the network. Meaning that scaling the network
+will have no impact to any node if the network is physically arranged in a ring
+topology.
+
+
+
+
+
 
 
 % put equations here

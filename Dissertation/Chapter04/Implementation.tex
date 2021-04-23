@@ -588,11 +588,10 @@ the next node.
     \includegraphics[width=0.3\textwidth]{ExampleNetwork}
     \includegraphics[width=0.3\textwidth]{masternode}
     \includegraphics[width=0.3\textwidth]{SingleNode}
-    \caption{
-            Left: An example network of RingTMP. The green node being the master node and the blue nodes being the worker nodes.
-            Centre: The architecture of the master node.
-            Right: The architecture of the worker node.
-        }
+    \caption{Left: An example network of RingTMP. The green node being the
+            master node and the blue nodes being the worker nodes. Centre: The
+            architecture of the master node. Right: The architecture of the
+            worker node.}
 \end{figure}
 
 Each batch of data follows the same path. It starts in the master node, a batch
@@ -658,19 +657,76 @@ Whereas for the RingTMP model the same neural network split over two nodes would
 only need to communicate 120 values. Over 300 times less network communication.
 
 The final major advantage is the capacity for increased bandwidth between the
-nodes, which built into the structure of the network. In a parameter server
+nodes, which is built into the structure of the network. In a parameter server
 model all workers connect to a single parameter server, so the network have a
 star topology. This means bandwidth of the network is only as large as the
 bandwidth of the parameter server, the relationship between the parameter server
 bandwidth with each worker and the number of nodes in inversely proportional
-(\(b = \frac{1}{x-1} where x \geq 2\)). With the RingTmp network all nodes have
-two connections one ahead, one behind in a ring topology. This means no single
-node will limit the bandwidth of the network. Meaning that scaling the network
-will have no impact to any node if the network is physically arranged in a ring
-topology.
+(\(b = \frac{1}{n-1} \text{ where } n \geq 2\)). With the RingTmp network all
+nodes have two connections, one ahead, one behind in a ring topology. This means
+no single node will limit the bandwidth of the network. Meaning that scaling the
+network will have no impact to any nodes bandwidth if the network is physically
+arranged in a ring topology.
 
+% implementation of ring topology
+I implemented RingTMP in Elixir with the help of a GenServer, as the name
+suggests its a structure that acts like a server holding state and sending and
+receiving messages. Elixir also treats the GenServer like a server, separating
+out the client and implementation code.
 
+% node initialisation
 
+Implementing the forward propagation
+code in the master node looks like so:
+\begin{lstlisting}
+    # client code
+    def train(batches, expecteds) do
+        GenServer.call(__MODULE__, {:train, batches, expecteds})
+    end
+
+    # callback
+    @impl true
+    def handle_call(
+      {:train, all_batches, all_expecteds}, _from,
+      state = {:master, _m_node, _this, prev_node, next_node, _history, _expecteds, test_acc, max_bid, false, _nn_opts}
+    ) do
+
+      # sends batches around the network
+      Enum.map(all_batches, fn batch ->
+        send(next_node, {:forward, forward_batch(batch)})
+      end)
+
+      # master needs to store the expected values of each
+      # forward propagation so it can produce the remaining error
+      expecteds = Enum.reduce(
+        all_expecteds, %{},
+        fn expected, acc -> add_history(acc, expected) end)
+
+      # also needs to store sent batches in order to
+      # update its own neural network parameters
+      history = Enum.reduce(
+        all_batches, %{},
+        fn batch, acc -> add_history(acc, batch) end)
+
+      max_bid = elem(List.last(all_batches), 0)
+
+      state = state
+      |> put_elem(5, history)
+      |> put_elem(6, expecteds)
+      |> put_elem(8, max_bid)
+      |> put_elem(9, true) # making master busy
+
+      {:reply, :ok, state}
+    end
+\end{lstlisting}
+
+% worker forward
+
+% master forward
+
+% worker back
+
+% master back
 
 
 

@@ -1,0 +1,1075 @@
+%-----------------------------------------------------------------------------------------
+\clearpage
+\section{Implementation}
+%-----------------------------------------------------------------------------------------
+
+\subsection{Tooling}
+Implementing a distributed neural network is too large a task to be undertaken
+from scratch. Therefore its necessary to used existing tools, to make the
+development viable in the time given. This is difficult as not many languages
+lend themselves to both distributed systems and neural networks.
+
+To ensure high performance the project could be implemented in C++. While C++ is
+often very performant and also has low level bindings for ML libraries such as
+TensorFlow. However even the creator of the language sees the need to improve
+its ability to improve its distributed performance. \cite{stroustrupInterview}
+
+Python has great tooling for neural networking, such as TensorFlow
+\cite{abadi2016tensorflow}, and PyTorch \cite{paszke2019pytorch}. Moreover it
+has great support for numerical computing with NumPy \cite{harrisNumpy2020}.
+These are performant too, by calling C functions or creating code which is
+optimised to run on GPUs to parallelise computation. However due to the Global
+Interpreter Lock (GIL) python is infamously bad at concurrency, while its
+distributed tooling is implemented in native python code, which lack of speed
+and could bottleneck the performance gained from using NumPy and TensorFlow.
+
+Ultimately I decided to use Elixir as the programming language of
+implementation. This is because Elixir was designed for developing highly
+concurrent distributed systems. It does this by having a uniquely brilliant
+concurrency model. As opposed to OOP languages where 'everything is an object'
+in Elixir 'everything is a process'. This means the default way of writing the
+language enables it to be concurrent and scalable. Elixir also has the ability
+to communicate with other Elixir programs over the network using its own
+application protocol on top of TCP/IP. Meaning its as easy to communicate with
+local processes on your own machine as processes on another machine running an
+Elixir program. Its also been used by artificial intelligence researchers before
+as the process concurrency models effortlessly lends itself to modelling
+neurons. \cite{sherNeuroevolutionThroughErlang} Using Elixirs native float and
+arithmetic implementation would be slower than a C++ or a NumPy implementation,
+luckily there is a stable package which supports matrix calculations even faster
+than those in NumPy called Matrex. \cite{matrex}
+
+The only drawback of using Elixir is at the time of development it didn't have a
+strong machine learning library, which means implementing the mathematics of the
+neural network myself. While this was a sizeable amount of work to do, it had
+the benefit that I didn't to wrestle with an opinionated API such as TensorFlow,
+I could create my own API to meet my ends.
+
+\subsection{Neural Network Implementation}
+In order to create a distributed neural network. I first needed to create a
+basic feed forward network that could operate on a single machine. This network
+doesn't need to be fully featured, its just a means to make an objective
+comparison between RingTMP and a generic parameter server. Therefore only 2
+types of layers were implemented, the hidden layer and the output layer. The
+hidden layer is a generic dense layer similar to the kind you would find in any
+other neural network library. The output layer performs similarly to the hidden
+layer with the key difference that its always the final layer in a network and
+outputs the activations as probabilities. Within this section I will explain in
+more detail how the neural network was implemented from scratch and the
+mathematics behind its function.
+
+% creating a network should go here first
+\subsubsection{Initialisation}
+Neural networks are composed of layers, while conceptually layers are
+composed of neurons, they're practically implemented with two components. A
+weights matrix and a bias vector. As I have already mentioned in this network
+there are two types of layers, hidden layers and output layers. We need to label
+each layer with its type, so we know how to perform forward and
+backpropagation. Therefore we can describe a layer as the tuple:
+\begin{lstlisting}[numbers=none,frame=none]
+    {layer_type, weights, bias}
+\end{lstlisting}
+
+Placing several of these tuples in a list creates a network:
+\begin{lstlisting}[numbers=none,frame=none]
+  network = [{:hidden_layer, weights_1, bias_1},
+                {:hidden_layer, weights_2, bias_2},
+                {:output_layer, weights_3, bias_3}]
+\end{lstlisting}
+
+The weights and biases have different dimensions depending on the layers input
+size and output size. A layer might take an activations vector with a size of
+\(m\) and output a size of \(n\). The layer would hold a \(n \times m\) matrix
+and the dimensions of the bias would be \(n \times 1\). The output size of one
+layer must be the input size of the next layer. Initialising the biases is
+simple, as biases have the function of an intercept in a linear equation, they
+can be initialised to 0. The trivial code is below:
+\begin{lstlisting}
+  defp initialise_bias(col) do
+    Matrex.zeros(col, 1)
+  end
+\end{lstlisting} 
+Weights are more complex. Each layer is initialised with random values from a
+uniform distribution, the shape of the uniform distribution is dependant upon
+the size of the input and output layers of the neural network. The type of
+initialisation used is dependant upon the activation function used.
+
+In the hidden layer the ReLU function is used, common wisdom first established
+in this paper \cite{he2015delving} states that for the fastest convergence He
+initialisation should be used. He initialisation is done by sampling random
+values from a normal distribution with a mean of 0 and a variance of \( 2/N \)
+where \(N\) represents the number of input values to a layer.
+
+For the output layer, the softmax function is used. The best initialisation
+method in this case is using Xavier
+initialisation. \cite{glorot2010understanding} This also takes random samples
+from a normal distribution with a mean of 0 but has the variance of \( 1/N \)
+where \(N\) is \( (inputSize + outputSize) / 2 \).
+
+However in practice training the model often failed with He initialisations.
+This was because of what is known as the 'Dying ReLU Problem'. Which is when the
+elements of a z vector are negative, the ReLU activation function
+will return a zero meaning no learning is taking place. Once a neuron becomes
+dead its unlikely it will be revived as the function is piecewise and provides
+no slope for recovery such as a Leaky ReLU or a sigmoid function. To remedy this
+I trialed many distributions, settling on a mean of 0.5 with a variance of 0.25.
+While this is more simplistic, and may impact training times, its far more
+likely for the network to not be dead on arrival because of the initialisation
+parameters. This is part of the code which initialises the matrices in the layers:
+\begin{lstlisting}
+  defp random_val(_x, {n, :he, seed_state, acc}) do
+    {val, new_state} = :rand.normal_s(0, 2 / col, seed_state)
+    {col, :he, new_state, [val | acc]}
+  end
+
+  defp random_val(_x, {n, :pos, seed_state, acc}) do
+    {val, new_state} = :rand.normal_s(0.5, 0.25, seed_state)
+    {n, :pos, new_state, [val | acc]}
+  end
+
+  defp random_val(_x, {n, :xavier, seed_state, acc}) do
+    {val, new_state} = :rand.normal_s(0, 1 / col, seed_state)
+    {col, :xavier, new_state, [val | acc]}
+  end
+\end{lstlisting}
+You can find the wider context for this code snippet in code listing in the Appendix 1. ~\ref{network_initialisation} 
+
+
+\subsubsection{Forward Propagation}
+In forward propagation we give an input vector and an output vector is returned.
+In order for that to happen the input vector is passed through each layer, each
+time being transformed by the weights, bias and activation function of that
+layer. The input to the network could be measurements describing a flower (like
+in the setosa dataset), the output layer could describe which species. More
+broadly put, the input described the features, and the output predicts the
+categories to which those features belong.
+
+On a layer level forward propagation is performed by taking the input vector
+multiplying it with the weights matrix, after which you add the bias and apply
+the activation function. The output of this is then passed to the next layer, or
+if its the last layer, output as the network prediction result. The generic
+mathematics of a forward function is described below in this linear equation
+where  \(X\) is the input matrix, \(W\) is the weights, \(B\) is the bias,
+\(activationFunc(x)\) is the activation function and finally \(A\) is the output
+activation:
+\begin{equation}
+    \begin{aligned}
+        X = \begin{bmatrix}
+            x_{1} \\
+            x_{2} \\
+            x_{3}
+        \end{bmatrix} \, \, \, \, \, \, \,
+        W &= \begin{bmatrix}
+            w_{11} & w_{12} & w_{13} \\
+            w_{21} & w_{22} & w_{23}
+        \end{bmatrix} \, \, \, \, \, \, \,
+        B = \begin{bmatrix}
+            b_{1} \\
+            b_{2}
+        \end{bmatrix} \\[10pt]
+        A &= activationFunc( W^{T}X + B )
+    \end{aligned}
+\end{equation}
+
+In my implementation there are only two layer types. Hidden layers and output
+layers. The only difference between these two layers is the activation function
+that they use. Hidden layers use the ReLU activation function which is a simple
+piecewise non-linear function described as such:
+\begin{equation}
+    relu(z) = max(0,z)
+\end{equation}
+This function has become the de facto application function in dense hidden
+layers since its debut in 2011. \cite{glorot2011deep}. In Elixir the forward
+action in the hidden layer is implemented like so: \footnote{The pipe operator
+\lstinline{|>} transforms the function \lstinline{val_a |> a_function(val_b)}
+into \lstinline{a_function(val_a, val_b)}}
+\begin{lstlisting}
+defmodule HiddenLayer
+  def forward(previous_activation, weights, bias) do
+    weights |> Matrex.transpose()
+    |> Matrex.dot(previous_activation)
+    |> Matrex.add(bias)
+    |> relu()
+  end
+
+  defp relu(z_vector) do
+    z_vector|> Matrex.apply(
+        fn value, _index -> if value > 0, do: value, else: 0 end
+    )
+  end
+
+  ...
+\end{lstlisting}
+
+The output layer uses a more complex activation function, the softmax function,
+which transforms its inputs into probabilities. The sum of these probabilities
+is always 1. This is the softmax function, where \(z\) is a \(i \times 1\)
+vector:
+\begin{equation}
+    softmax(z)_{i} = \frac{e^{z_{i}}}{\sum_{j=1}^{n} e^{z_{j}}}
+\end{equation}
+
+This function is implemented the categorical output layer like so:
+\begin{lstlisting}
+defmodule CategoricalOutputLayer do
+  def forward(previous_activation, weights, bias) do
+      weights |> Matrex.transpose()
+      |> Matrex.dot(previous_activation)
+      |> Matrex.add(bias)
+      |> softmax()
+  end
+
+  defp softmax(z_vector) do
+      stabilised_vec = Matrex.subtract(z_vector, Matrex.max(z_vector))
+      exp = Matrex.apply(stabilised_vec, :exp)
+      Matrex.divide(exp, Matrex.sum(exp))
+  end
+
+  ...
+\end{lstlisting}
+
+% show forward propagation function across the networks
+Propagating forward through the layers happens by using the output of one
+layer as the input to the next, performing a slightly different forward action
+depending on the layer:
+
+PUT IN APPENDIX
+\begin{lstlisting}
+defmodule FeedForwardNetwork.Forward do
+  def forward(network, input_vector) do
+    Enum.reduce(network, input_vector, fn layer, acc -> forward_layer(layer, acc) end)
+  end
+
+  defp forward_layer({:hidden_layer, weights, bias}, prev_activation) do
+    {_z_vec, activation} = HiddenLayer.forward(prev_activation, weights, bias, [])
+    activation
+  end
+
+  defp forward_layer({:output_layer, weights, bias}, prev_activation) do
+    CategoricalOutputLayer.forward(prev_activation, weights, bias, [])
+  end
+
+  ...
+\end{lstlisting}
+
+\subsubsection{Cost Function}
+A neural network is trained by using examples of correct classifications based
+on given data. The data is input into the network, and the network attempts to
+label the data correctly. The networks prediction is compared to the correct
+classification using a cost function, this gives a single value representation
+describing how close or far the network was to the correct classification. A
+perfect classification will result in a score of 0, the more wrong the network
+prediction is the larger the cost produced by the cost function. The cost 
+function used in this network is categorical cross entropy, which allows for
+multi class classification. It takes two inputs, an output vector \(y\) of the network
+(its prediction), and the one hot encoded vector \(t\) of the target classification:
+\begin{equation}
+    cost(t, y) = - \sum_{i}^{C} t_{i}log(y_{i})
+\end{equation}
+
+This implementation is similar, but removed redundant computation in the cases
+where \(t_{i} = 0\) the cost will always be 0. Here we also catch situations
+where the activation underflows to 0, which would result in a math error as
+\(log(0)\) is undefined. For the full code example see the code listing
+~\ref{cost_function} in the appendix.
+\begin{lstlisting}
+defmodule CategoricalOutputLayer
+  def loss(activation, target_activation) do
+    target_position = get_target_category(target_activation)
+
+    activation
+    |> Matrex.at(target_position, 1)
+    |> (fn x ->
+          if x == 0.0, do: 100, else: -:math.log(x) end
+        end).()
+  end
+
+  ...
+\end{lstlisting}
+
+
+\subsubsection{Back Propagation}
+The result of the cost function represents the error within the network,
+backpropagation adjusts the weights and biases to minimise the loss within the
+network. Meaning that if the same input was given to the network again after
+backpropagation, the output would be closer to the target, than before
+backpropagation had occurred. The changes to the weights and bias of each layer
+can be calculated by using the chain rule, to discover the relationship between
+the weights and biases with respect to the loss.
+
+To calculate the change in weights and biases in the output layer, we first need
+to find the derivative of the cost function w.r.t the network output and the
+derivative of the softmax function w.r.t \(z\).
+
+\begin{equation}
+    \begin{aligned}
+        c &= - \sum_{i}^{c} t_{i}log(a_{i}) \\
+        \frac{\partial c}{\partial a} &= - \sum_{i}^{c} \frac{t_{i}}{a_{i}}
+    \end{aligned}
+\end{equation}
+
+Finding the derivative of the softmax is a little more complex:
+\begin{equation}
+    \begin{aligned}
+        &       &   a_{j} &= \frac{e^{z_{j}}}{\sum_{k=1}^{N} e^{z_{k}}} \\
+        &\text{applying quotient rule (for brevity} \sum = \sum_{k=1}^{N} e^{z_{k}} \text{)}   &   \frac{\partial a_{i}}{\partial z_{j}} &= \frac{e^{z_{i}} \sum - e^{z_{j}}e^{z_{i}}}{\sum^{2}}\\[2em]
+        &\text{if } i=j \text{ then it can be factorised}     &   \frac{\partial a_{i}}{\partial z_{j}} &= \frac{e^{z_{i}}}{\sum} \frac{\sum - e^{z_{j}}}{\sum}\\
+        &\text{substituting in softmax}     &   \frac{\partial a_{i}}{\partial z_{j}} &= a_{i} (1 - a_{j})\\[2em]
+        &\text{if } i \neq j \text{ then it can be factorised}      &   \frac{\partial a_{i}}{\partial z_{j}} &= \frac{0 - e^{z_{j}}e^{z_{i}}}{\sum^{2}}\\
+        &\text{substituting in softmax}     &   \frac{\partial a_{i}}{\partial z_{j}} &= -a_{j}a_{i}
+    \end{aligned}
+\end{equation}
+
+Combining these with the chain rule (\(\frac{\partial c}{\partial z} = \frac{\partial c}{\partial a} \cdot \frac{\partial a}{\partial z}\)):
+\begin{equation}
+    \begin{aligned}
+        \frac{\partial c}{\partial z_{i}} &= \sum_{k}^{C} \frac{\partial c}{\partial a_{k}} \frac{a_{k}}{z_{i}}\\
+        &= \frac{\partial c}{\partial a_{i}} \frac{a_{i}}{z_{i}} - \sum_{k \neq i} \frac{\partial c}{\partial a_{k}} \frac{a_{k}}{z_{i}}\\
+        &= - t_{i}(1 - a_{i}) + \sum_{k \neq i} t_{k}a_{i}\\
+        &= - t_{i} + a_{i} \sum_{k} t_{k}\\
+        &= a_{i} - t_{i}
+    \end{aligned}
+\end{equation}
+
+The rest of the calculations will be in linear equations as its closer to the
+implementation as easier to follow, where:
+\begin{itemize}
+    \item \( T \) is a \( m \times 1 \) target output
+    \item \( A \) is a  \( m \times 1 \) output activation
+    \item \( W \) is a \( n \times m \) weights matrix
+    \item \( B \) is a \( m \times 1 \) bias
+    \item \( Z \) is a \( m \times 1 \) sum of the matrix multiplication and bias
+    \item \(A^{L-1} \) is a \( n \times 1 \) activation of the previous layer
+\end{itemize}
+
+Output Layer bias w.r.t cost:
+\begin{equation}
+    \begin{aligned}
+        Z &= W^{T}A_{L-1} + B\\
+        \frac{\partial Z}{\partial B} &= 1\\[2em]
+        \frac{\partial c}{\partial B} &= \frac{\partial c}{\partial Z} \cdot \frac{\partial Z}{\partial B}\\
+        \frac{\partial c}{\partial B} &= A - T \cdot 1
+    \end{aligned}
+\end{equation}
+
+Output Layer weights w.r.t cost:
+\begin{equation}
+    \begin{aligned}
+        Z &= W^{T}A_{L-1} + B\\
+        \frac{\partial Z}{\partial W} &= A_{L-1}\\[2em]
+        \frac{\partial c}{\partial W} &= \frac{\partial Z}{\partial W} \cdot \frac{\partial c}{\partial Z} \\
+        \frac{\partial c}{\partial W} &= A_{L-1} \cdot (A - T)^{T}
+    \end{aligned}
+\end{equation}
+
+Output layer remaining error:
+\begin{equation}
+    \begin{aligned}
+        Z &= W^{T}A_{L-1} + B\\
+        \frac{\partial Z}{\partial A_{L-1}} &= W\\[2em]
+        \frac{\partial c}{\partial A_{L-1}} &= \frac{\partial Z}{\partial A_{L-1}} \cdot \frac{\partial c}{\partial Z}\\
+        \frac{\partial c}{\partial A_{L-1}} &= W \cdot (A - T)
+    \end{aligned}
+\end{equation}
+
+We use the remaining error from the output layer to calculate the weights and
+biases w.r.t the cost in the hidden layers:
+\begin{itemize}
+    \item \( \frac{\partial c}{\partial A_{L-1}} \) is a \( n \times 1 \) remaining error vector 
+    \item \( A_{L-1} \) is a  \( n \times 1 \) output activation of this layer
+    \item \( W \) is a \( l \times n \) weights matrix of this layer
+    \item \( B \) is a \( n \times 1 \) bias of this layer
+    \item \( Z \) is a \( n \times 1 \) sum of the matrix multiplication and bias
+    \item \(A^{L-2} \) is a \( l \times 1 \) activation of the previous layer
+\end{itemize}
+
+The differential of the ReLU function.
+\begin{equation}
+    \begin{aligned}
+        A_{L-1} &= max(0,Z)\\[2em]
+        \frac{\partial A_{L-1}}{\partial Z} &= 
+        \begin{cases}
+            z_{i} > 0 & 1 \\
+            else & 0
+        \end{cases}
+    \end{aligned}
+\end{equation}
+
+This can be combined with \( \frac{\partial c}{\partial A_{L-1}} \) to make \(
+\frac{\partial c}{\partial Z} \) (\( \odot \) denotes element-wise
+multiplication):
+\begin{equation}
+    \begin{aligned}
+        \frac{\partial c}{\partial Z} &= \frac{\partial c}{\partial A_{L-1}} \odot \frac{\partial A_{L-1}}{\partial Z}\\
+    \end{aligned}
+\end{equation}
+
+Hidden Layer bias w.r.t cost:
+\begin{equation}
+    \begin{aligned}
+        Z &= W^{T}A_{L-2} + B\\
+        \frac{\partial Z}{\partial B} &= 1\\[2em]
+        \frac{\partial c}{\partial B} &= \frac{\partial c}{\partial Z} \cdot \frac{\partial Z}{\partial B}\\
+                                      &= \frac{\partial c}{\partial Z} \cdot 1
+    \end{aligned}
+\end{equation}
+
+Hidden Layer weights w.r.t cost:
+\begin{equation}
+    \begin{aligned}
+        Z &= W^{T}A_{L-2} + B\\
+        \frac{\partial Z}{\partial W} &= A_{L-2}\\[2em]
+        \frac{\partial c}{\partial W} &= \frac{\partial Z}{\partial W} \cdot \frac{\partial c}{\partial Z}\\
+                                      &= A_{L-2} \cdot \frac{\partial c}{\partial Z}
+    \end{aligned}
+\end{equation}
+
+Hidden Layer error w.r.t cost:
+\begin{equation}
+    \begin{aligned}
+        Z &= W^{T}A_{L-2} + B\\
+        \frac{\partial Z}{\partial A_{L-2}} &= W\\[2em]
+        \frac{\partial c}{\partial A_{L-2}} &= \frac{\partial c}{\partial Z} \cdot \frac{\partial Z}{\partial A_{L-2}}\\
+                                      &= \frac{\partial c}{\partial Z} \cdot W
+    \end{aligned}
+\end{equation}
+
+We use these derivatives to change the values of the weights and biases, however
+using them on their own creates too much change in the network causing it to
+take too large steps, often resulting in the better solutions being missed.
+Therefore we apply a learning rate, a scalar value which forces the model to take smaller steps.
+We use the learning rate like so:
+\begin{equation}
+    \begin{aligned}
+        \Delta B = \frac{\partial c}{\partial B} \cdot \text{learning rate}\\[1em]
+        \Delta W = \frac{\partial c}{\partial W} \cdot \text{learning rate} 
+    \end{aligned}
+\end{equation}
+
+In my code you can see that I use the exact same equations as in the mathematics.
+In the output layer:
+\begin{lstlisting}
+defmodule CategoricalOutputLayer do
+
+  def back(activation, prev_activation, weights, bias, target_activation, opts \\ []) do
+    cost_wrt_z = Matrex.subtract(target_activation, activation)
+
+    weight_delta =
+      Matrex.dot_nt(prev_activation, cost_wrt_z)
+      |> Matrex.multiply(Keyword.get(opts, :learning_rate, 1.0))
+
+    bias_delta = cost_wrt_z |> Matrex.multiply(Keyword.get(opts, :learning_rate, 1.0))
+
+    remaining_error = Matrex.dot(weights, cost_wrt_z)
+
+    new_weights = Matrex.add(weights, weight_delta, 1, 1)
+    new_bias = Matrex.add(bias, bias_delta)
+    {new_weights, new_bias, remaining_error}
+  end
+  ...
+\end{lstlisting}
+
+And in the hidden layer:
+\begin{lstlisting}[basicstyle=\linespread{0.8}\ttfamily\footnotesize]
+defmodule HiddenLayer do
+
+  def back(z_vec, prev_activation, weights, bias, remaining_error, opts \\ []) do
+    learning_rate = Keyword.get(opts, :learning_rate, 1.0)
+    a_wrt_z = Matrex.apply(z_vec, fn value, _index -> if value > 0, do: 1, else: 0 end)
+    cost_wrt_z = Matrex.multiply(remaining_error, a_wrt_z)
+
+    weight_delta =
+    prev_activation
+    |> Matrex.dot_nt(cost_wrt_z)
+    |> Matrex.multiply(learning_rate)
+
+    bias_delta = cost_wrt_z |> Matrex.multiply(learning_rate)
+
+    remaining_error = Matrex.dot(weights, cost_wrt_z)
+    new_weights = weights |> Matrex.add(weight_delta, 1, 1)
+    new_bias = Matrex.add(bias, bias_delta)
+
+    {new_weights, new_bias, remaining_error}
+  end
+  ...
+\end{lstlisting}
+
+\subsection{Parameter Server}
+The Parameter Server is currently the most popular way to distribute a machine
+learning task. Therefore I need to create one in order to compare it with my
+solution. My parameter server functions by iteratively sending the batches of
+training pairs with the parameters then when all the workers have responded the
+parameters from each worker are averaged. This cycle repeats until the network
+is trained.
+
+Connecting the workers to the server is quite simple in Elixir, here is an
+example using the elixir language shell, iex:
+\begin{lstlisting}[basicstyle=\linespread{0.8}\ttfamily\footnotesize,numbers=none]
+Machine 1
+$ iex --name foo@192.168.1.11 --cookie shared_string
+
+Machine 2
+$ iex --name bar@192.168.1.12 --cookie shared_string
+iex(bar@192.168.1.12)> Node.ping(:"foo@192.168.1.11")
+:pong
+\end{lstlisting}
+
+In elixir there is a concept of nodes which each node has its own name in the
+format of \lstinline{<application>@<local_ip>} you can have multiple nodes on a
+single machine, but if you need to communicate with nodes on another machine,
+you must set a cookie and ensure the cookie is the same on both the machines. In
+the example above we see one node messaging another one to get a response.
+
+We can also use this connection to send commands to a process within another
+node, have it do work for us and then respond with the result:
+\begin{lstlisting}[basicstyle=\linespread{0.8}\ttfamily\footnotesize]
+def send_to_worker(
+    sup, {train_input, train_label}}, network, opts) do
+
+  # sup = {TaskSupervisor, node} pair
+
+  sup
+  |> Task.Supervisor.async(
+     FeedForwardNetwork.Back,
+     :back_once,
+     [train_inputs, train_labels, network, opts]
+  )
+end
+\end{lstlisting}
+The \lstinline{TaskSupervisor} is a named process, the \lstinline{node} is a
+variable holding the atom describing the node e.g.
+(\lstinline{workerone@192.168.1.14}) this indicates the specific process you
+want to send the task to. Within the async function the model, function and
+function arguments are expressed. This asynchronously returns a task struct
+which can be \lstinline{Task.await(task)} awaited upon. This means a batch can
+be sent to each worker node at the same time and awaited on for the result. Like
+in the code below:
+\begin{lstlisting}[basicstyle=\linespread{0.8}\ttfamily\footnotesize]
+  def send_to_workers(chunk, network, opts \\ []) do
+    chunk
+    |> Enum.map(
+      fn sup_train_pair ->
+        send_to_worker(sup_train_pair, network, opts)
+      end)
+    |> Enum.map(fn t -> Task.await(t) end)
+  end
+\end{lstlisting}
+Each chunk contains elements destined for each node. These are asynchronously
+sent and awaited upon until all of them have sent back their updated versions of
+the network. These are then averaged and become the new parameters of the
+parameter server.
+\begin{lstlisting}[basicstyle=\linespread{0.8}\ttfamily\footnotesize]
+  def avg_networks(networks) do
+    size = Enum.count(networks)
+
+    networks
+    |> Enum.reduce(
+      fn network, sum_acc ->
+        sum_network(network, sum_acc)
+      end)
+    |> divide_network(size)
+  end
+\end{lstlisting}
+
+For the complete code look in the code appendix .... <PUT IN CODE APPENDIX>
+
+\subsection{RingTMP}
+The main product of my project is the RingTMP network, the name is an acronym
+for \textit{Ring Topological Model Parallel}. Its called as such because it has
+a ring topology and the neural network model is split between the nodes. In
+RingTMP each node in the distributed network holds consecutive layers of the
+neural network, there are two types of node, the master node and the worker
+nodes. The master node holds the training and testing data. It also starts the
+forward propagation and back propagation process, while worker nodes receive
+messages from adjacent nodes which they process and then forward the message to
+the next node.
+
+\begin{figure}[h]
+    \includegraphics[width=0.3\textwidth]{ExampleNetwork}
+    \includegraphics[width=0.3\textwidth]{masternode}
+    \includegraphics[width=0.3\textwidth]{SingleNode}
+    \caption{Left: An example network of RingTMP. The green node being the
+            master node and the blue nodes being the worker nodes. Centre: The
+            architecture of the master node. Right: The architecture of the
+            worker node.}
+\end{figure}
+
+Each batch of data follows the same path. It starts in the master node, a batch
+is forward propagated through the segment of the neural network being held
+locally. The intermediate result of that is send to the first worker node in the
+chain. Which uses the intermediate values to forward propagated through its
+neural network layers and send its results to the next node in the RingTMP
+network. This continues until the last worker node in the chain makes a
+prediction about the data given. This is then sent back to the master node which
+calculates the loss and sends that back to the worker. The worker then uses this
+to begin the backpropagation of errors back through the network. It first
+updates its own parameters based on the loss. Then passes back the remaining
+error back to the node before it until all the parameters have been updated.
+
+This is different to the parameter server in several important ways. First the
+model is split between the nodes, this means all thing being equal a larger
+model can be trained on a RingTMP network than on a non-model parallel parameter
+server. This is more of a useful feature for embedded devices where memory is at
+a premium. Using the example of the EfficientNetV2-L model, which contains 121
+million parameters. \cite{tan2021efficientnetv2} Estimating each of those to be
+a double precision value it would amount to almost a 1 Gigabyte of data,
+excluding the intermediate values stored in the RAM while performing
+calculations. A non-model parallel parameter server has to be able to hold all
+the variables in order for it to function, whereas in a RingTMP network the
+parameters can be distributed between the layers.
+
+Another major advantage is decreased communication between nodes. A non-model
+parallel parameter server will always send more data for a
+layer of the same size. This can be shown to be true thus.
+
+The amount of arbitrary units of data sent from a parameter server to a worker
+where \(n\) is the input size and \(m\) is the output size. Where \( m \geq 1\)
+and \( n \geq 1\) the this can be shown to be:
+\begin{equation}
+    \begin{aligned}
+        f(n,m) &= (n \cdot m) + m\\
+        f(n,m) &= m(n+1)
+    \end{aligned}
+\end{equation}
+The amount of arbitrary units of data sent from a RingTMP node to another node where \(m\) is
+the input size and \(n\) is the output size this can be shown to be:
+\begin{equation}
+    g(n,m) = 2m
+\end{equation}
+substituting \(g(n,m)\) into \(f(n,m)\):
+\begin{equation}
+    \begin{aligned}
+        f(n,m) &= \frac{g(n,m)}{2} \cdot (n+1)\\[1em]
+        f(n,m) &= g(n,m) \cdot \frac{n+1}{2}
+    \end{aligned}
+\end{equation}
+Given that \(n\) must be at least 1,  \( \frac{n+1}{2} \) must also be at least
+1. A number multiplied by 1 or greater will always be greater than or equal to
+the initial value, we can say that the parameter server will always communicate
+as much or more information between nodes than RingTMP.
+
+A simple example of this can be given to show the reduction in communication
+between nodes. Take a two layer neural network the first layer having 784 input
+nodes and 50 output nodes, and the second layer had 50 input nodes and 10 output
+nodes. A worker sending updated weights back to a parameter server would have to
+communicate 39760 values (\( (784 \times 50) + (50 \times 10) = 39860\)).
+Whereas for the RingTMP model the same neural network split over two nodes would
+only need to communicate 120 values. Over 300 times less network communication.
+
+The final major advantage is the capacity for increased bandwidth between the
+nodes, which is built into the structure of the network. In a parameter server
+model all workers connect to a single parameter server, so the network have a
+star topology. This means bandwidth of the network is only as large as the
+bandwidth of the parameter server, the relationship between the parameter server
+bandwidth with each worker and the number of nodes in inversely proportional
+(\(b = \frac{1}{n-1} \text{ where } n \geq 2\)). With the RingTmp network all
+nodes have two connections, one ahead, one behind in a ring topology. This means
+no single node will limit the bandwidth of the network. Meaning that scaling the
+network will have no impact to any nodes bandwidth if the network is physically
+arranged in a ring topology.
+
+% talk about research that influenced the creation of this in more detail
+% distbelief, strads, asynchronous convergence in a parameter server paper
+% 'Communication Efficient Distributed Machine Learning with the Parameter Server'
+
+% implementation of ring topology
+I implemented RingTMP in Elixir with the help of a GenServer, as the name
+suggests its a structure that acts like a server holding state and sending and
+receiving messages. Elixir also treats the GenServer like a server, separating
+out the client and implementation code.
+
+First each node must be initialised, it takes its the \lstinline{node_type},
+this is either \lstinline{:master | :worker} and determines the behaviour of the
+node. \lstinline{m_node, this_node, prev_node, next_node} are all tuples which
+contain \{ process, node \} tuples which point to the 
+\lstinline{master, current, previous, next} nodes in the network respectively.
+The current node is then started and the initial state is set.
+\begin{lstlisting}
+@impl true
+def init({node_type, m_node, this_node, prev_node, next_node, nn_opts}) do
+  
+  this_host = elem(this_node, 1)
+  Node.start(this_host, :shortnames)
+  
+  {:ok, {node_type, m_node, this_node, prev_node, next_node, %{}, %{}, %{accuracy: 0, cost: 0}, 0, false, nn_opts}}
+end
+\end{lstlisting}
+
+Implementing the forward propagation code in the master node looks like so:
+\begin{lstlisting}
+  # client code
+  def train(batches, expecteds) do
+      GenServer.call(__MODULE__, {:train, batches, expecteds})
+  end
+
+  # callback
+  @impl true
+  def handle_call(
+    {:train, all_batches, all_expecteds}, _from,
+    state = {:master, _m_node, _this, prev_node, next_node, _history, _expecteds, test_acc, max_bid, false, _nn_opts}
+  ) do
+
+    # sends batches around the network
+    Enum.map(all_batches, fn batch ->
+      send(next_node, {:forward, forward_batch(batch)})
+    end)
+
+    # master needs to store the expected values to calculate loss
+    expecteds = Enum.reduce(
+      all_expecteds, %{},
+      fn expected, acc -> add_history(acc, expected) end)
+
+    # also needs to store sent batches in order to
+    # update its own neural network parameters
+    history = Enum.reduce(
+      all_batches, %{},
+      fn batch, acc -> add_history(acc, batch) end)
+
+    # stores batch id so we know when last element is finished
+    max_bid = elem(List.last(all_batches), 0)
+
+    state = state
+    |> put_elem(5, history)
+    |> put_elem(6, expecteds)
+    |> put_elem(8, max_bid)
+    |> put_elem(9, true) # making master busy
+
+    {:reply, :ok, state}
+  end
+
+  defp forward_batch({num, batch_data}) do
+    {num, NeuralNet.forward(batch_data)}
+  end
+\end{lstlisting}
+you may notice the use of batches. A batch is training data linked with a
+sequential ID, this is so we can track batches (\lstinline| {batch_id, data} |)
+through the network, the expected values (or labels for the data) have a
+corresponding ID so they can be matched to calculate loss and accuracy while
+testing and training. You can also see here the state is updated with the
+history, the input activations to the RingTmp node. We need this as an input
+parameter for the backpropagation function. The expecteds only the master node
+needs to hold, its a map of all the labels the corresponds to a piece of
+training data. We store the ID of the last training pair so we know when an
+epoch has finished. Finally the \lstinline{true} value sets the state of the
+network to busy so you can't accidentally train the network on two different
+datasets.
+
+A worker receives \lstinline| {:forward, batch} | and continues the forward
+propagation for every batch it receives.
+\begin{lstlisting}
+  @impl true
+  def handle_info({:forward, batch}, state = {:worker, _m_node, _this, _prev, next_node, history, _exp, _test_acc, _max_bid, busy, _nn_opts}) do
+    # do forward action
+    {num, _} = batch
+
+    send(next_node, {:forward, forward_batch(batch)})
+
+    history = add_history(history, batch)
+    state = put_elem(state, 5, history)
+    {:noreply, state}
+
+  end
+\end{lstlisting}
+% worker forward
+
+When a worker node sends its activations to the master, the master node matches
+the output activation to the expected label using the batch ID, the loss is then
+calculated and a message is sent back to the same worker \lstinline| {:back, {b_id, loss}} |.
+\begin{lstlisting}
+  @impl true
+  def handle_info({:forward, batch}, state = {:master, _m_node, _this, prev_node, _next_node, _history, expecteds, _test_acc, _max_bid, busy, _nn_opts}) do
+
+    # do back
+    {b_id, b_data} = batch
+    id_as_str = Integer.to_string(b_id)
+    expected = Map.get(expecteds, id_as_str)
+
+    send(prev_node, {:back, {b_id, expected}})
+    {:noreply, state}
+  end
+\end{lstlisting}
+% master forward
+
+This worker uses the error to update its own parameters, then
+sends the error it produces back further.
+\begin{lstlisting}
+  @impl true
+  def handle_info({:back, error_batch}, state = {:worker, _m_node, _this, prev_node, _next, history, _exp, _test_acc, _max_bid, _busy, nn_opts}) do
+
+    {b_id, error_vec} = error_batch
+    b_id_str = b_id |> Integer.to_string()
+    input_for_batch = Map.get(history, b_id_str)
+    remaining_error = NeuralNet.back(input_for_batch, error_vec, nn_opts)
+
+    send(prev_node, {:back, {b_id, remaining_error}})
+
+    {:noreply, state}
+  end
+\end{lstlisting}
+
+When this finally reaches the master node again is updates the parameters in its
+segment of the network, then changes the state of the RingTmp network to not busy
+if its processed the last batch.
+\begin{lstlisting}
+  @impl true
+  def handle_info({:back, error_batch}, state = {:master, _m_node, _this, _prev, _next, history, _exp, _test_acc, max_bid, _busy, nn_opts}) do
+
+    {b_id, error_vec} = error_batch
+    b_id_str = b_id |> Integer.to_string()
+    input_for_batch = Map.get(history, b_id_str)
+    remaining_error = NeuralNet.back(input_for_batch, error_vec, nn_opts)
+
+    if b_id == max_bid do
+      state = put_elem(state, 9, false)
+      {:noreply, state}
+    else
+      {:noreply, state}
+    end
+  end
+\end{lstlisting}
+
+% need to wrap it up down here
+
+
+% put equations here
+
+% second diagram here
+% second equations here
+
+% $$a_{2} = relu(z)$$
+
+% $$z = a_{1}w + b$$
+% \begin{figure}[h]
+%     \centering
+%     \includegraphics[width=0.6\textwidth]{simplest_neural_network_1}
+% \end{figure}
+% \begin{equation}
+%     z_{21} = a_{11}w_{11} + a_{12}w_{12} + b_{1} \, \, \, \, \, \, \, z_{22} = a_{11}w_{21} + a_{12}w_{22} + b_{2}
+% \end{equation}
+% \begin{equation}
+%     a_{21} = relu(z_{21}) \, \, \, \, \, \, \, a_{22} = relu(z_{22}) 
+% \end{equation} 
+% \begin{equation}
+%     z = a_{1}w + b
+% \end{equation}
+% \begin{equation}
+%     a_{2} = relu(z)
+% \end{equation}
+
+% The activation function being used
+% in the hidden layers in this project is the ReLU function, which has become the de
+% facto activation function since its discovery in 2011. \cite{glorot2011deep}
+
+% start
+% train accuracy/cost: 0.0992/63.65561427012801
+% test accuracy/cost: 0.1012/63.997217051681304
+
+% single node mnist trail 1
+% epoch,train_accuracy,train_cost,validation_accuracy,validation_cost,epoch_time
+% 1,0.918,0.3952434176629586,0.898,0.4144836344381613,123745
+% 2,0.93,0.28713244611983235,0.916,0.34318294678006694,130478
+% 3,0.934,0.24429140427788681,0.928,0.2757496936845496,132108
+% 4,0.943,0.21227286540717114,0.942,0.22514307440383613,129765
+% 5,0.944,0.20180308562594346,0.932,0.21399681619281882,38388
+% 6,0.937,0.19793565999280657,0.936,0.21867741240424604,40073
+% 7,0.942,0.19093988508650336,0.936,0.21470406484118595,144215
+% 8,0.942,0.1895986593710066,0.934,0.20362427011068868,39813
+% 9,0.935,0.22351568566055688,0.924,0.23211497502473136,40239
+% 10,0.943,0.18041196188124028,0.942,0.1961921297562964,130897
+% 11,0.946,0.17587264611433862,0.942,0.19620226709692126,38874
+% 12,0.947,0.168719719866954,0.94,0.19693526468134476,38961
+% 13,0.946,0.16555723595309998,0.946,0.2037753870716359,114701
+% 14,0.953,0.14927811458303308,0.942,0.1915399333803487,40768
+% 15,0.956,0.13931847506498332,0.942,0.1926937133603907,130144
+% 16,0.952,0.14187527288760637,0.942,0.19191000493911947,129091
+% 17,0.962,0.12950418409715056,0.942,0.20168618819246875,132279
+
+% trial 2
+% train accuracy/cost: 0.0993/54.956633965480954
+% test accuracy/cost: 0.1032/55.0988828817427
+
+% epoch,train_accuracy,train_cost,validation_accuracy,validation_cost,epoch_time
+% 1,0.902,0.3379556472164734,0.9,0.3893389719629754,121002
+% 2,0.925,0.26245143086618206,0.926,0.27761674152574856,131258
+% 3,0.93,0.265747230621085,0.926,0.30517069769976474,130538
+% 4,0.939,0.20614088760790353,0.94,0.24733061360149378,118805
+% 5,0.943,0.1853368465431845,0.944,0.2399319796323065,40928
+% 6,0.947,0.17506708443722588,0.954,0.21975613152948484,128831
+% 7,0.954,0.16235642477893228,0.956,0.2158088115771306,132716
+% 8,0.956,0.15537893628693594,0.956,0.20829621717332594,237283
+% 9,0.954,0.14630669444274347,0.95,0.21665277385479428,136796
+% 10,0.953,0.1493621380951459,0.952,0.21802594787999163,132795
+% 11,0.955,0.15073556696610108,0.954,0.2073447206624231,140163
+
+% train accuracy/cost: 0.09915/87.4895566808986
+% test accuracy/cost: 0.1009/87.4368066807005
+
+% trial 3
+% epoch,train_accuracy,train_cost,validation_accuracy,validation_cost,epoch_time
+% 1,0.8926333333333333,0.4351099382606878,0.8868,0.4744105370614251,122284,2099
+% 2,0.9167833333333333,0.308752601343428,0.9104,0.36214979887136467,127653,2387
+% 3,0.9255333333333333,0.26898227183821366,0.9164,0.3298592681708615,146190,2140
+% 4,0.9355833333333333,0.23519617354362746,0.923,0.30498730950917147,131134,2048
+% 5,0.93935,0.2153115480931644,0.9283,0.28412117874622506,126482,2451
+% 6,0.9465666666666667,0.19067969103743437,0.9346,0.2660180354326538,163515,2465
+% 7,0.9495166666666667,0.1763674988514944,0.9375,0.2605050988826894,159366,2409
+% 8,0.9515,0.16853000336092466,0.9375,0.2614512028069932,150565,2209
+% 9,0.9535666666666667,0.1583501394553572,0.9387,0.2546042172908202,132519,2679
+% 10,0.95665,0.14699961284932336,0.9415,0.2520481044360989,145151,2407
+% 11,0.9588166666666667,0.14097704764189825,0.9418,0.24614035106938162,132869,2240
+% 12,0.9608166666666667,0.13274857370416435,0.9442,0.24556187346423936,125850,2373
+% 13,0.9606833333333333,0.13418875408247263,0.9436,0.2506818907530832,137157,3657
+% 14,0.9619833333333333,0.12962497716910953,0.943,0.25355707149450984,129173,1980
+% 15,0.9639333333333333,0.12275000728121341,0.945,0.2501252556532447,88063,2337
+% 16,0.9644,0.12079346405449706,0.9473,0.25173444495817743,118987,2042
+% 17,0.9673833333333334,0.10916658840004884,0.9498,0.24257554852981533,90083,2479
+% 18,0.9686166666666667,0.10497027316807805,0.9497,0.24318437458364178,136007,2774
+% 19,0.9671,0.11013677745642561,0.948,0.25221302646000315,100847,2464
+% 20,0.9653666666666667,0.11625677276316015,0.9464,0.261837317667045,125284,2032
+
+% final acc_cost
+% train accuracy/cost: 0.9653666666666667/0.11625677276316015
+% test accuracy/cost: 0.9464/0.261837317667045
+
+% trial 4
+% train accuracy/cost: 0.0993/77.14810604499557
+% test accuracy/cost: 0.1032/77.22227435010038
+
+% epoch,train_accuracy,train_cost,validation_accuracy,validation_cost,epoch_time
+% 1,0.8886666666666667,0.4230676608700251,0.8888,0.4417610002266978,133189
+% 2,0.9112,0.32179217607365646,0.9072,0.35886570822235137,89624
+% 3,0.9273333333333333,0.2548758536838732,0.9215,0.30529797384052726,141838
+% 4,0.9384166666666667,0.21391533189661024,0.9285,0.2693651988964977,133524
+% 5,0.9440333333333333,0.19235304680842163,0.9347,0.25456392887559653,137302
+% 6,0.9488666666666666,0.175979124671523,0.9385,0.2452122392266388,124087
+% 7,0.9539833333333333,0.15885611329027532,0.9426,0.2363650724338113,123909
+% 8,0.9561166666666666,0.15298695025957368,0.9449,0.22868420056797686,130562
+% 9,0.9583833333333334,0.14664667322363203,0.9456,0.22325828186422797,143023
+% 10,0.9597666666666667,0.13779694373832027,0.9466,0.22067628034847953,128598
+% 11,0.9615,0.13170580471119217,0.948,0.2232548303332384,130828
+% 12,0.9627,0.12821856229351625,0.949,0.2240415763523964,129560
+% 13,0.9646666666666667,0.12055884014478094,0.9509,0.22244952310927651,142178
+% 14,0.9654,0.11757978160638173,0.949,0.22371317675136324,130965
+% 15,0.9671833333333333,0.11339880226187332,0.9499,0.2186108861003912,130060
+% 16,0.9679,0.10820090682995202,0.9506,0.22062426154963036,129417
+% 17,0.9678833333333333,0.10904134199752749,0.9495,0.22455408907459878,148161
+% 18,0.969,0.10476726805876517,0.9506,0.22556736129578717,136081
+% 19,0.9689166666666666,0.10396632843808833,0.9504,0.22933159105397868,131866
+% 20,0.9699,0.10151391916703591,0.9503,0.23081247448348355,128746
+
+% final acc_cost
+% train accuracy/cost: 0.9699/0.10151391916703591
+% test accuracy/cost: 0.9503/0.23081247448348355
+
+% trial 5
+% start
+% train accuracy/cost: 0.11253333333333333/64.4664257345655
+% test accuracy/cost: 0.1135/64.91020719502423
+
+% epoch,train_accuracy,train_cost,validation_accuracy,validation_cost,epoch_time
+% 1,0.9105,0.34690366538417844,0.9074,0.3921214361436585,126529
+% 2,0.9264833333333333,0.26702050165196917,0.9199,0.32556213332017114,93063
+% 3,0.9399833333333333,0.21524257715142658,0.9315,0.27925903054066975,154069
+% 4,0.94555,0.1956436293119668,0.9357,0.2678700796442015,142211
+% 5,0.9501833333333334,0.17635441426093418,0.9403,0.25597721331410367,87599
+% 6,0.9525666666666667,0.16538132626209218,0.9436,0.25106580554160246,96005
+% 7,0.9535,0.16190056918699816,0.9424,0.26169466063524593,132416
+% 8,0.9543,0.15658959214782703,0.9424,0.2616893735606202,89631
+% 9,0.9576,0.14399409747209085,0.944,0.25883938062978623,134882
+% 10,0.9595833333333333,0.13871066132584872,0.9443,0.264819454237037,150075
+% 11,0.9573333333333334,0.1454676636908526,0.9426,0.27936836278517596,100984
+% 12,0.9594833333333334,0.1355668788247306,0.9435,0.28251538579213126,91322
+% 13,0.9596,0.13354736032517983,0.9426,0.2794584344859771,118423
+% 14,0.95825,0.1402493267947852,0.9406,0.29470828215188294,90543
+% 15,0.9627166666666667,0.12417577657559979,0.9455,0.28264919986659365,132505
+% 16,0.9632833333333334,0.12085555599183663,0.9459,0.2807919145151968,88819
+% 17,0.9649166666666666,0.11520629532028849,0.9468,0.28453677288385854,99716
+% 18,0.9650833333333333,0.11396593962317608,0.9457,0.2892370520473415,110539
+% 19,0.9670166666666666,0.10851995409194617,0.9474,0.28067416183003624,140236
+% 20,0.9696666666666667,0.09751634248576573,0.9493,0.2680408907155888,131072
+
+% final acc_cost
+% train accuracy/cost: 0.9696666666666667/0.09751634248576573
+% test accuracy/cost: 0.9493/0.2680408907155888
+
+% train 6
+% train accuracy/cost: 0.09736666666666667/67.18663520351748
+% test accuracy/cost: 0.0982/67.86492193535426
+
+% epoch,train_accuracy,train_cost,validation_accuracy,validation_cost,epoch_time
+% 1,0.88125,0.4580426998947378,0.881,0.4818885845014412,117252
+% 2,0.9143,0.30987879611616653,0.9096,0.3404023491387993,98588
+% 3,0.92565,0.2633806045979782,0.9205,0.30793511453475747,158150
+% 4,0.9354166666666667,0.22437831215429846,0.929,0.275993237316917,129801
+% 5,0.9382166666666667,0.21126306674619494,0.9327,0.2701540921674482,81425
+% 6,0.9441,0.18897740120424786,0.9362,0.2490436069777927,105638
+% 7,0.94495,0.18940365831623457,0.937,0.2533842055676187,128374
+% 8,0.9464666666666667,0.1811605655348353,0.9379,0.25107280390717146,92050
+% 9,0.9476,0.17510809261063984,0.9377,0.25304462903017483,140059
+% 10,0.94975,0.17158739059814246,0.94,0.25553982640452566,141504
+% 11,0.9506333333333333,0.16574044081690012,0.9412,0.2526067852642267,87122
+% 12,0.95315,0.1579750010530362,0.9418,0.2487439546166548,95081
+% 13,0.9546166666666667,0.15167676865874655,0.9439,0.2487564316554848,120208
+% 14,0.9533333333333334,0.15589531502086842,0.9426,0.2528061482488589,89692
+% 15,0.9543333333333334,0.15259795022769712,0.9435,0.25372699700072493,134677
+% 16,0.95695,0.1436476025429943,0.9446,0.2524578421852498,86843
+% 17,0.9566666666666667,0.1444419670362814,0.9444,0.2572299955743772,94175
+% 18,0.95875,0.13926329576793348,0.9452,0.2566703068785179,112836
+% 19,0.9579833333333333,0.14078577675304538,0.9454,0.26345615569450487,143905
+% 20,0.9594666666666667,0.13437828413131384,0.9456,0.2603195320442817,117507
+
+% train 7
+% train accuracy/cost: 0.09823333333333334/36.54709424038171
+% test accuracy/cost: 0.1028/36.834980743640045
+
+% epoch,train_accuracy,train_cost,validation_accuracy,validation_cost,epoch_time
+% 1,0.90375,0.3733934672922663,0.8972,0.40324410179551384,121203
+% 2,0.9212666666666667,0.2889255440852631,0.9151,0.32847448317768374,89498
+% 3,0.9309166666666666,0.24796658762805263,0.9215,0.3025095600911983,153622
+% 4,0.94155,0.2100049245753157,0.9303,0.2754123440513542,138920
+% 5,0.94655,0.18673074450437188,0.9356,0.2530449673992369,85237
+% 6,0.9480333333333333,0.1797717866795537,0.9391,0.2506564052822683,130094
+% 7,0.9515333333333333,0.16718944750933082,0.9398,0.24569443875455413,158150
+% 8,0.9545333333333333,0.15773425302992497,0.9406,0.24272983902679385,183439
+% 9,0.9551333333333333,0.15451458241640773,0.9415,0.24410052500681845,183599
+% 10,0.95785,0.14535652816099973,0.9446,0.23877497974863057,174919
+% 11,0.9621833333333333,0.12887268796550225,0.9467,0.22623612963656087,114281
+% 12,0.9641166666666666,0.123832686522602,0.9477,0.22704297903880674,128937
+% 13,0.9640666666666666,0.12255595002638633,0.9484,0.23024475574234657,151811
+% 14,0.9661666666666666,0.11484248879953385,0.9507,0.22406084056657938,116578
+% 15,0.9659166666666666,0.11587185513842801,0.9495,0.23036513888816354,170900
+% 16,0.9685,0.10734950310584446,0.9515,0.21930427876927347,114662
+% 17,0.9695333333333334,0.10431147734685832,0.9527,0.22339723681772247,123794
+% 18,0.9702333333333333,0.10138694223458057,0.9534,0.22516212097154406,140861
+% 19,0.9710666666666666,0.09985188583188742,0.9536,0.23089763068799007,168520
+% 20,0.9723666666666667,0.09563723219914694,0.9562,0.22797051734425008,137826
+
+% train 8
+% train accuracy/cost: 0.10441666666666667/64.3001375917718
+% test accuracy/cost: 0.1028/64.7589084858639
+
+% epoch,train_accuracy,train_cost,validation_accuracy,validation_cost,epoch_time
+% 1,0.8985,0.3850816973423467,0.8967,0.4116473929644212,149299
+% 2,0.92255,0.29578468685142456,0.9196,0.33225363211598824,105019
+% 3,0.9306,0.2482132265544529,0.9212,0.2908685279066245,167126
+% 4,0.9352666666666667,0.2283306109835157,0.926,0.28253656221770357,153797
+% 5,0.93945,0.2087031249596173,0.9274,0.26763938775862584,93734
+% 6,0.9437333333333333,0.19109316976417834,0.9326,0.25760892956806436,106195
+% 7,0.9485333333333333,0.17320545746857025,0.9365,0.24259456377422334,133216
+% 8,0.9493333333333334,0.16877586177320164,0.9393,0.24953778742957367,100780
+% 9,0.951,0.1639139263715681,0.9383,0.25269464432718935,151342
+% 10,0.9553833333333334,0.14596218699134705,0.9431,0.23527030580816155,155485
+% 11,0.9584,0.13727042754857505,0.9461,0.233764282222751,95854
+% 12,0.9590333333333333,0.13292039216207965,0.9458,0.2344342276292478,104655
+% 13,0.9595166666666667,0.13132418956556674,0.9453,0.2372178098770712,134685
+% 14,0.9627833333333333,0.12177851991250364,0.9473,0.23189549738893428,102914
+% 15,0.9627166666666667,0.12172740091344662,0.9475,0.2377617490479464,151620
+% 16,0.9645,0.11619587279123915,0.9493,0.23625639962740447,113719
+% 17,0.9672,0.10740325458076076,0.9511,0.22929232966439245,113630
+% 18,0.9638333333333333,0.11943977518190493,0.948,0.24996621156746465,125252
+% 19,0.9681333333333333,0.10392563985813136,0.952,0.2314195878156716,160911
+% 20,0.9681,0.10565400978495341,0.9509,0.23401105143739115,132210
+
+% final acc_cost
+% train accuracy/cost: 0.9681/0.10565400978495341
+% test accuracy/cost: 0.9509/0.23401105143739115

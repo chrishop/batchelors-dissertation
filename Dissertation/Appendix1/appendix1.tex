@@ -1,1 +1,91 @@
-\section{one }
+\section{Appendix 1}
+\subsubsection{Code Listings}
+\begin{lstlisting}[caption={Network Initialisation}, label={network_initialisation}]
+defmodule FeedForwardNetwork.DefineNetwork
+  defp initialise_parameters(definition, initial_seed) do
+    definition
+    |> Enum.reduce(
+      {[], initial_seed},
+      fn layer, {acc, seed_state} ->
+        {layer, new_state} = initialise_layer(layer, seed_state)
+        {acc ++ [layer], new_state}
+      end
+    )
+  end
+
+  defp initialise_layer({layer_type, input_size, output_size}, seed_state) do
+    init_type = layer_to_init(layer_type)
+
+    {initial_weights, seed_state} =
+      initialise_weights(input_size, output_size, init_type, seed_state)
+
+    initial_bias = initialise_bias(output_size)
+
+    {{layer_type, initial_weights, initial_bias}, seed_state}
+  end
+
+  defp initialise_weights(col, row, init_type, seed_state) do
+    {_, _, _, seed_state, list_of_lists} =
+      Enum.reduce(
+        0..(col - 1),
+        {row, col, init_type, seed_state, []},
+        &random_row/2
+      )
+    {Matrex.new(list_of_lists), seed_state}
+  end
+
+  defp random_row(_x, {row, col, init_type, seed_state, acc}) do
+    {_, _, new_state, row_vals} =
+      Enum.reduce(
+        0..(row - 1),
+        {col, init_type, seed_state, []},
+        &random_val/2
+      )
+    {row, col, init_type, new_state, [row_vals | acc]}
+  end
+
+  defp random_val(_x, {n, :he, seed_state, acc}) do
+    {val, new_state} = :rand.normal_s(0, 2 / n, seed_state)
+    {n, :he, new_state, [val | acc]}
+  end
+
+  defp random_val(_x, {col, :pos, seed_state, acc}) do
+    {val, new_state} = :rand.normal_s(0.5, 0.25, seed_state)
+    {col, :pos, new_state, [val | acc]}
+  end
+
+  defp random_val(_x, {n, :xavier, seed_state, acc}) do
+    {val, new_state} = :rand.normal_s(0, 1 / n, seed_state)
+    {n, :xavier, new_state, [val | acc]}
+  end
+
+  defp initialise_bias(col) do
+    Matrex.zeros(col, 1)
+  end
+
+  defp layer_to_init(:hidden_layer), do: :pos
+  defp layer_to_init(:output_layer), do: :xavier
+end
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Cost Function}, label={cost_function}]
+  def loss(activation, target_activation) do
+    target_position = get_target_category(target_activation)
+
+    activation
+    |> Matrex.at(target_position, 1)
+    |> (fn x ->
+          if x == 0.0, do: 100, else: -:math.log(x) end
+        end).()
+  end
+
+  defp get_target_category(target_activation) do
+    {row, _col} = Matrex.size(target_activation)
+
+    Enum.map(1..row, fn x -> [x] end)
+    |> Matrex.new()
+    |> Matrex.multiply(target_activation)
+    |> Matrex.sum()
+    |> round()
+  end
+\end{lstlisting}

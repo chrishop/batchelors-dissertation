@@ -22,6 +22,7 @@
 \usepackage{arydshln} % add hash line for tables
 \usepackage{booktabs} % new tables
 
+\usepackage{color}
 \usepackage{xcolor}
 % \newcommand\mytodo[1]{\textcolor{red}{#1}}
 \usepackage{lipsum}
@@ -36,16 +37,33 @@
 
 \usepackage[nottoc]{tocbibind} % add list of figure and tables and put them in content 
 
-\usepackage{geometry}
+\usepackage[a4paper, margin=1in]{geometry}
 \usepackage{pdflscape}
 
+\lstset{frame=tb,
+   aboveskip=4mm,
+   belowskip=2mm,
+   showstringspaces=false,
+   columns=flexible,
+   basicstyle={\linespread{0.8}\ttfamily\footnotesize},
+   numbers=left,
+   numbersep=5pt,
+   numberstyle=\color{gray},
+   keywordstyle=\color{blue},
+   commentstyle=\color{dkgreen},
+   stringstyle=\color{mauve},
+   breaklines=true,
+   breakatwhitespace=true
+   tabsize=3
+}
+
 % Margins
-\topmargin=-0.45in
-\evensidemargin=0in
-\oddsidemargin=0in
-\textwidth=6.5in
-\textheight=9.0in
-\headsep=0.25in 
+% \topmargin=-0.45in
+% \evensidemargin=0in
+% \oddsidemargin=0in
+% \textwidth=6.5in
+% \textheight=9.0in
+% \headsep=0.25in 
 
 
 \linespread{1.3} % Line spacing
@@ -94,8 +112,8 @@
 % \include{Chapter01/RelatedWorks}
 \include{Chapter02/LiteratureReview}
 \include{Chapter03/ProblemDescription}
-% \include{Chapter04/Design}
-% \include{Chapter05/Requirement}
+\include{Chapter04/Implementation}
+\include{Chapter05/Results}
 % \include{Chapter06/Implementation}
 % \include{Chapter07/Reflection}
 % \include{Chapter08/FutureWork}
@@ -104,13 +122,15 @@
 %-----------------------------------------------------------------------------------------
 
 \clearpage
-\bibliographystyle{ieeetr}
+% \bibliographystyle{ieeetr}
+\bibliographystyle{unsrt}
+
 \bibliography{References/references}
 
-% \clearpage
-% \begin{appendices}
-% \include{Appendix1/appendix1}
-% \include{Appendix2/appendix2}
+\clearpage
+\begin{appendices}
+\include{Appendix1/appendix1}
+\include{Appendix2/appendix2}
 
-% \end{appendices}
+\end{appendices}
 \end{document}

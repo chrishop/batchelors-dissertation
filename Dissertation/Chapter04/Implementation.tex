@@ -674,59 +674,155 @@ suggests its a structure that acts like a server holding state and sending and
 receiving messages. Elixir also treats the GenServer like a server, separating
 out the client and implementation code.
 
-% node initialisation
-
-Implementing the forward propagation
-code in the master node looks like so:
+First each node must be initialised, it takes its the \lstinline{node_type},
+this is either \lstinline{:master | :worker} and determines the behaviour of the
+node. \lstinline{m_node, this_node, prev_node, next_node} are all tuples which
+contain \{ process, node \} tuples which point to the 
+\lstinline{master, current, previous, next} nodes in the network respectively.
+The current node is then started and the initial state is set.
 \begin{lstlisting}
-    # client code
-    def train(batches, expecteds) do
-        GenServer.call(__MODULE__, {:train, batches, expecteds})
-    end
-
-    # callback
-    @impl true
-    def handle_call(
-      {:train, all_batches, all_expecteds}, _from,
-      state = {:master, _m_node, _this, prev_node, next_node, _history, _expecteds, test_acc, max_bid, false, _nn_opts}
-    ) do
-
-      # sends batches around the network
-      Enum.map(all_batches, fn batch ->
-        send(next_node, {:forward, forward_batch(batch)})
-      end)
-
-      # master needs to store the expected values of each
-      # forward propagation so it can produce the remaining error
-      expecteds = Enum.reduce(
-        all_expecteds, %{},
-        fn expected, acc -> add_history(acc, expected) end)
-
-      # also needs to store sent batches in order to
-      # update its own neural network parameters
-      history = Enum.reduce(
-        all_batches, %{},
-        fn batch, acc -> add_history(acc, batch) end)
-
-      max_bid = elem(List.last(all_batches), 0)
-
-      state = state
-      |> put_elem(5, history)
-      |> put_elem(6, expecteds)
-      |> put_elem(8, max_bid)
-      |> put_elem(9, true) # making master busy
-
-      {:reply, :ok, state}
-    end
+@impl true
+def init({node_type, m_node, this_node, prev_node, next_node, nn_opts}) do
+  
+  this_host = elem(this_node, 1)
+  Node.start(this_host, :shortnames)
+  
+  {:ok, {node_type, m_node, this_node, prev_node, next_node, %{}, %{}, %{accuracy: 0, cost: 0}, 0, false, nn_opts}}
+end
 \end{lstlisting}
 
+Implementing the forward propagation code in the master node looks like so:
+\begin{lstlisting}
+  # client code
+  def train(batches, expecteds) do
+      GenServer.call(__MODULE__, {:train, batches, expecteds})
+  end
+
+  # callback
+  @impl true
+  def handle_call(
+    {:train, all_batches, all_expecteds}, _from,
+    state = {:master, _m_node, _this, prev_node, next_node, _history, _expecteds, test_acc, max_bid, false, _nn_opts}
+  ) do
+
+    # sends batches around the network
+    Enum.map(all_batches, fn batch ->
+      send(next_node, {:forward, forward_batch(batch)})
+    end)
+
+    # master needs to store the expected values to calculate loss
+    expecteds = Enum.reduce(
+      all_expecteds, %{},
+      fn expected, acc -> add_history(acc, expected) end)
+
+    # also needs to store sent batches in order to
+    # update its own neural network parameters
+    history = Enum.reduce(
+      all_batches, %{},
+      fn batch, acc -> add_history(acc, batch) end)
+
+    # stores batch id so we know when last element is finished
+    max_bid = elem(List.last(all_batches), 0)
+
+    state = state
+    |> put_elem(5, history)
+    |> put_elem(6, expecteds)
+    |> put_elem(8, max_bid)
+    |> put_elem(9, true) # making master busy
+
+    {:reply, :ok, state}
+  end
+
+  defp forward_batch({num, batch_data}) do
+    {num, NeuralNet.forward(batch_data)}
+  end
+\end{lstlisting}
+you may notice the use of batches. A batch is training data linked with a
+sequential ID, this is so we can track batches (\lstinline| {batch_id, data} |)
+through the network, the expected values (or labels for the data) have a
+corresponding ID so they can be matched to calculate loss and accuracy while
+testing and training. You can also see here the state is updated with the
+history, the input activations to the RingTmp node. We need this as an input
+parameter for the backpropagation function. The expecteds only the master node
+needs to hold, its a map of all the labels the corresponds to a piece of
+training data. We store the ID of the last training pair so we know when an
+epoch has finished. Finally the \lstinline{true} value sets the state of the
+network to busy so you can't accidentally train the network on two different
+datasets.
+
+A worker receives \lstinline| {:forward, batch} | and continues the forward
+propagation for every batch it receives.
+\begin{lstlisting}
+  @impl true
+  def handle_info({:forward, batch}, state = {:worker, _m_node, _this, _prev, next_node, history, _exp, _test_acc, _max_bid, busy, _nn_opts}) do
+    # do forward action
+    {num, _} = batch
+
+    send(next_node, {:forward, forward_batch(batch)})
+
+    history = add_history(history, batch)
+    state = put_elem(state, 5, history)
+    {:noreply, state}
+
+  end
+\end{lstlisting}
 % worker forward
 
+When a worker node sends its activations to the master, the master node matches
+the output activation to the expected label using the batch ID, the loss is then
+calculated and a message is sent back to the same worker \lstinline| {:back, {b_id, loss}} |.
+\begin{lstlisting}
+  @impl true
+  def handle_info({:forward, batch}, state = {:master, _m_node, _this, prev_node, _next_node, _history, expecteds, _test_acc, _max_bid, busy, _nn_opts}) do
+
+    # do back
+    {b_id, b_data} = batch
+    id_as_str = Integer.to_string(b_id)
+    expected = Map.get(expecteds, id_as_str)
+
+    send(prev_node, {:back, {b_id, expected}})
+    {:noreply, state}
+  end
+\end{lstlisting}
 % master forward
 
-% worker back
+This worker uses the error to update its own parameters, then
+sends the error it produces back further.
+\begin{lstlisting}
+  @impl true
+  def handle_info({:back, error_batch}, state = {:worker, _m_node, _this, prev_node, _next, history, _exp, _test_acc, _max_bid, _busy, nn_opts}) do
 
-% master back
+    {b_id, error_vec} = error_batch
+    b_id_str = b_id |> Integer.to_string()
+    input_for_batch = Map.get(history, b_id_str)
+    remaining_error = NeuralNet.back(input_for_batch, error_vec, nn_opts)
+
+    send(prev_node, {:back, {b_id, remaining_error}})
+
+    {:noreply, state}
+  end
+\end{lstlisting}
+
+When this finally reaches the master node again is updates the parameters in its
+segment of the network, then changes the state of the RingTmp network to not busy
+if its processed the last batch.
+\begin{lstlisting}
+  @impl true
+  def handle_info({:back, error_batch}, state = {:master, _m_node, _this, _prev, _next, history, _exp, _test_acc, max_bid, _busy, nn_opts}) do
+
+    {b_id, error_vec} = error_batch
+    b_id_str = b_id |> Integer.to_string()
+    input_for_batch = Map.get(history, b_id_str)
+    remaining_error = NeuralNet.back(input_for_batch, error_vec, nn_opts)
+
+    if b_id == max_bid do
+      state = put_elem(state, 9, false)
+      {:noreply, state}
+    else
+      {:noreply, state}
+    end
+  end
+\end{lstlisting}
 
 
 

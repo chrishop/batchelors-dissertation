@@ -1,4 +1,64 @@
 %-----------------------------------------------------------------------------------------
 \section{Conclusion}
 %-----------------------------------------------------------------------------------------
+This project has been mostly successful, I have:
+\begin{itemize}
+    \item Created a RingTMP prototype framework
+    \item Created a parameter server model framework
+    \item Clearly shown there is much less communication between nodes in the
+    RingTMp framework in comparison to the parameter server
+    \item shown that RingTMP converges as fast or than the parameter server
+\end{itemize}
 
+However I wasn't able to show that:
+\begin{itemize}
+    \item RingTMP can achieve the same accuracy as a parameter server
+    \item That RingTMP is as scalable as a parameter server
+\end{itemize}
+In this paper it was shown how machine learning models are getting larger and
+larger to accomplish ever more difficult tasks. These larger models require more
+data but also require longer to train. The training process can be sped by
+parallelising the machine learning algorithm. \cite{newman2008distributed} The
+way typically used to parallelise neural networks is the parameter server
+\cite{LI2014ParameterServers}. The limiting factor of parameter servers,
+communication between the parameter server and workers. In a naive parameter
+server all the server model parameters are communicated with each worker every
+round. This can saturate the network and bottleneck performance. To remedy this
+workers can be designed to only send back significant updates and modify their
+function to work asynchronously with a bounded delay. \cite{li2014communication}
+This reduces the wait time of each worker and the bandwidth each worker uses. As
+well as the parameter server the merits and drawbacks of model parallel and data
+parallel machine learning were discussed.
+
+I justified my reasoning for using Elixir as my language of implementation. I've
+described in details how I implemented the core neural network both
+mathematically and in code as well as how I implemented two different
+distributed neural networking paradigms.
+
+In my results section I showed the results of my many experiments on my software
+product measuring accuracy, speed, scalability and amount of communication
+within the network. The results showed that RingTMP greatly reduced
+communication, and converge a little faster, but at the cost of a small amount
+of accuracy.
+
+These results mean that while the RingTMP paradigm is promising its not yet
+realised. Unfortunately for most neural network use cases accuracy is paramount
+and the distributed model will have little use until it can be shown to train
+models to at least the same accuracy as a parameter server. I have no doubt this
+can be achieved in the future.
+
+Further research of this paradigm is needed to find a way of improving the
+accuracy of the models it produces. More work could also be done to more
+specifically focus on its scalability, showing how different configurations of
+RingTMP nodes and neural nodes effects performance. Finally there is an
+opportunity to explore a ring topological network in the context of distributed
+machine learning, can a physical ring network reduce bandwidth constrains with
+hundreds of connected nodes?
+
+I feel this project has been somewhat of a success, as the majority of my aims
+were realised. My RingTMP framework and research has shown its possible to
+produce a huge reduction in communication between nodes in comparison to a
+generic parameter server per epoch and per unit time, if this method is
+perfected it could have major implications for the field of distributed neural
+networks, by increasing bandwidth and reducing communication to the point that
+its no longer a limiting factor in the training of a neural network.

@@ -741,21 +741,21 @@ Implementing the forward propagation code in the master node looks like so:
     {num, NeuralNet.forward(batch_data)}
   end
 \end{lstlisting}
-you may notice the use of batches. A batch is training data linked with a
-sequential ID, this is so we can track batches (\lstinline| {batch_id, data} |)
-through the network, the expected values (or labels for the data) have a
-corresponding ID so they can be matched to calculate loss and accuracy while
-testing and training. You can also see here the state is updated with the
-history, the input activations to the RingTmp node. We need this as an input
-parameter for the backpropagation function. The expecteds only the master node
-needs to hold, its a map of all the labels the corresponds to a piece of
-training data. We store the ID of the last training pair so we know when an
-epoch has finished. Finally the \lstinline{true} value sets the state of the
-network to busy so you can't accidentally train the network on two different
+you may notice the use of batches. A batch is an item of training data linked
+with a sequential ID, this is so we can track batches through the network, the
+expected values (or labels for the data) have a corresponding ID so they can be
+matched to calculate loss and accuracy while testing and training. You can also
+see here the state is updated with the history, which records the input
+activations of the RingTmp node. We need this to be stored so we can use it as
+an input parameter for the backpropagation function. The expecteds only the
+master node needs to hold, it's a map of all the labels the corresponds to a
+piece of training data. We store the ID of the last training pair so we know
+when an epoch has finished. Finally the \lstinline{true} value sets the state of
+the network to busy so you can't accidentally train the network on two different
 datasets.
 
-A worker receives \lstinline| {:forward, batch} | and continues the forward
-propagation for every batch it receives.
+A worker then receives \lstinline| {:forward, batch} | message from the master
+node and continues the forward propagation for every batch it receives.
 \begin{lstlisting}
   @impl true
   def handle_info({:forward, batch}, state = {:worker, _m_node, _this, _prev, next_node, history, _exp, _test_acc, _max_bid, busy, _nn_opts}) do
@@ -807,7 +807,7 @@ sends the error it produces back further.
   end
 \end{lstlisting}
 
-When this finally reaches the master node again is updates the parameters in its
+When this finally reaches the master node again it updates the parameters in its
 segment of the network, then changes the state of the RingTmp network to not busy
 if its processed the last batch.
 \begin{lstlisting}

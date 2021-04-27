@@ -6,8 +6,8 @@ This project has been mostly successful, I have:
     \item Created a RingTMP prototype framework
     \item Created a parameter server model framework
     \item Clearly shown there is much less communication between nodes in the
-    RingTMp framework in comparison to the parameter server
-    \item shown that RingTMP converges as fast or than the parameter server
+    RingTMP framework in comparison to the parameter server
+    \item Shown that RingTMP converges as fast or than the parameter server
 \end{itemize}
 
 However I wasn't able to show that:
@@ -17,29 +17,32 @@ However I wasn't able to show that:
 \end{itemize}
 In this paper it was shown how machine learning models are getting larger and
 larger to accomplish ever more difficult tasks. These larger models require more
-data but also require longer to train. The training process can be sped by
+data but also require longer to train. The training process can be sped up by
 parallelising the machine learning algorithm. \cite{newman2008distributed} The
 way typically used to parallelise neural networks is the parameter server
-\cite{LI2014ParameterServers}. The limiting factor of parameter servers,
-communication between the parameter server and workers. In a naive parameter
-server all the server model parameters are communicated with each worker every
-round. This can saturate the network and bottleneck performance. To remedy this
-workers can be designed to only send back significant updates and modify their
-function to work asynchronously with a bounded delay. \cite{li2014communication}
-This reduces the wait time of each worker and the bandwidth each worker uses. As
-well as the parameter server the merits and drawbacks of model parallel and data
-parallel machine learning were discussed.
+\cite{LI2014ParameterServers}. When there are many nodes often the limiting
+factor becomes communication between the server and the workers. In a naive
+parameter server all the server model parameters are communicated with each
+worker every round. This can saturate the network and bottleneck performance. To
+remedy this workers can be designed to only send back significant updates and
+modify their function to work asynchronously with a bounded delay.
+\cite{li2014communication} This reduces the wait time of each worker and the
+bandwidth each worker uses. As well as the parameter server the merits and
+drawbacks of model parallel and data parallel machine learning were discussed in
+general.
 
-I justified my reasoning for using Elixir as my language of implementation. I've
-described in details how I implemented the core neural network both
-mathematically and in code as well as how I implemented two different
-distributed neural networking paradigms.
+I justified my reasoning for using Elixir as my language of implementation.
+Although in using a language with neural networking package would have given me
+more time to focus on distributing the network. I've described in details how I
+implemented the core neural network both mathematically and in code as well as
+how I implemented two different distributed neural networking paradigms.
 
 In my results section I showed the results of my many experiments on my software
 product measuring accuracy, speed, scalability and amount of communication
 within the network. The results showed that RingTMP greatly reduced
-communication, and converge a little faster, but at the cost of a small amount
-of accuracy.
+communication (384\(\times\) per epoch, \(8\times\) per unit time) in the
+experiments, and converge a little faster, but at the cost
+of a small amount of accuracy.
 
 These results mean that while the RingTMP paradigm is promising its not yet
 realised. Unfortunately for most neural network use cases accuracy is paramount
@@ -58,7 +61,8 @@ hundreds of connected nodes?
 I feel this project has been somewhat of a success, as the majority of my aims
 were realised. My RingTMP framework and research has shown its possible to
 produce a huge reduction in communication between nodes in comparison to a
-generic parameter server per epoch and per unit time, if this method is
-perfected it could have major implications for the field of distributed neural
-networks, by increasing bandwidth and reducing communication to the point that
-its no longer a limiting factor in the training of a neural network.
+generic parameter server up to but not limited to \(8\times\) per unit time, if
+this method is perfected it could have major implications for the field of
+distributed neural networks, by increasing bandwidth and reducing communication
+to the point that its no longer a limiting factor in the training of a neural
+network.

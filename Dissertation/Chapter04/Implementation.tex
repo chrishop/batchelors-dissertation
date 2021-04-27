@@ -34,9 +34,9 @@ application protocol on top of TCP/IP. Meaning its as easy to communicate with
 local processes on your own machine as processes on another machine running an
 Elixir program. Its also been used by artificial intelligence researchers before
 as the process concurrency models effortlessly lends itself to modelling
-neurons. \cite{sherNeuroevolutionThroughErlang} Using Elixirs native float and
-arithmetic implementation would be slower than a C++ or a NumPy implementation,
-luckily there is a stable package which supports matrix calculations even faster
+neurons. \cite{sherNeuroevolutionThroughErlang} Using Elixir's native float and
+arithmetic implementation would be slower than a C++ or a NumPy implementation.
+Luckily, there is a stable package which supports matrix calculations even faster
 than those in NumPy called Matrex. \cite{matrex}
 
 The only drawback of using Elixir is at the time of development it didn't have a
@@ -61,7 +61,7 @@ mathematics behind its function.
 % creating a network should go here first
 \subsubsection{Initialisation}
 Neural networks are composed of layers, while conceptually layers are
-composed of neurons, they're practically implemented with two components. A
+composed of neurons, they're practically implemented with two components, a
 weights matrix and a bias vector. As I have already mentioned in this network
 there are two types of layers, hidden layers and output layers. We need to label
 each layer with its type, so we know how to perform forward and

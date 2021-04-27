@@ -69,7 +69,7 @@ When creating distributed machine learning models there are two different method
 for distributing training, model parallelism and data parallelism. These two
 methods are not mutually exclusive and can be used in conjunction with one
 another, such as in DistBelief. \cite{Dean2012Distbelief}. Model parallelism is
-when model parameters are split between the nodes. As data parallelism is when
+when model parameters are split between the nodes. Data parallelism is when
 the training data is split between the nodes. \cite{Xing2015Petuum} Often with model
 parallelism the whole set of training data is passed through each node. While in
 data parallelism its common for each node to hold the whole machine learning
@@ -97,10 +97,10 @@ iterative model, where communication is the limiting factor. Creating a generic
 parameter server similar to how Googles map reduce algorithm is implemented
 \cite{googlemapreduce2008} is still in some sense sequential. The next iteration
 can't continue until all workers have responded with their updated parameters,
-and each worker must send its results back no matter how significant its work
+and each worker must send its results back no matter how insignificant its work
 is. Relaxing these restraints in specific ways have been shown to produce faster
-training times, while still converging on a model just as accurate. Especially
-when time, not data is at a premium.\cite{li2014communication}
+training times, while still converging on a model just as accurate, especially
+when time not data is at a premium.\cite{li2014communication}
 \par
 Partially relaxing the iterative restraint of the parameter server and instead
 using a bounded delay, dramatically decreases the wait times of workers to
@@ -194,8 +194,8 @@ relatively few rounds of communication. \cite{konevcny2016federated}
 
 % low power solutions
 Efforts have been made in techniques to reduce the power, memory and storage
-needed for machine learning algorithms to operate. One of these is Data Stream
-Mining. The idea is that a device can stream the analytics data directly into
+needed for machine learning algorithms to operate. One of these is data stream
+mining. The idea is that a device can stream the analytics data directly into
 the model rather than storing the data for later use.
 \cite{garciaMartin2019MLEnergy} This means after the data has been read by the
 model it is lost. But that also means that no data needs to be stored, meaning

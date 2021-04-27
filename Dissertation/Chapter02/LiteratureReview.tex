@@ -3,22 +3,13 @@
 \section{Literature Review}
 %-----------------------------------------------------------------------------------------
 \subsection{Brief Introduction to Machine Learning and Neural Networks}
-To first understand Distributed Machine Learning you must first understand the
-fundamentals of machine learning and neural networks. 
-
-There are many machine learning methods some requiring training data which we
-call supervised and some being able to find patterns in data without being given
-solutions called unsupervised. \cite{alpaydin2020introduction} An example of a
-supervised system may be predicting house prices, using multiple factors about
-each house (market data, geographic area, square footage etc.) to come to a
-conclusion about what the house could sell for. This would be trained using data
-of previously sold houses to predict current ones. An example of an unsupervised
-system could be identification of new plant species. This could be done by
-taking as many features of a plant as possible, then apply a clustering
-algorithm to see if there are two distinct clusters in the data. If there were
-then that would suggest two different plant species. Neural networks tend to
-focus on supervised learning and use a form gradient descent called Stochastic
-Gradient Descent.
+To first understand distributed machine learning you must first understand the
+fundamentals of machine learning and neural networks. There are many machine
+learning methods some requiring training data which we call supervised and some
+being able to find patterns in data without being given solutions called
+unsupervised. \cite{alpaydin2020introduction} Neural networks tend to focus on
+supervised learning and use a form gradient descent called stochastic gradient
+descent.
 
 Many machine learning algorithms use a cost function to measure how well or
 badly they are solving a problem, these algorithms use parameters which are
@@ -36,40 +27,33 @@ algorithm that does this is called gradient descent for that very reason. This
 often happens in little steps after the observation of each piece of data.
 However it is computationally expensive to step down the gradient after each
 example. It is more efficient to calculate the average step of a randomised
-selection of data. This is know as Stochastic Gradient Descent.
+selection of data. This is know as stochastic gradient descent.
 
 Neural networks are structures that can perform multi-variable gradient descent
-when provided with training data. Neural networks are comprised of layers of
+when provided with training data. They are comprised of layers of
 interconnected neurons in a lattice like structure. Each neuron holds parameter
 information the adjusting of which through gradient descent leads to the solving
-of a problem through reaching the local minimum of the cost function. These
-structures can then be placed in a parameter server and run in a distributed
-fashion, if desired.
+of a problem through reaching the local minimum of the cost function.
 
 \subsection{Limited History of Distributed Machine Learning}
-% TODO: EXPAND critically analyse all of these sources, flesh this section out a little by
-% adding some more papers?
 
-One of the first pieces of research into distributed machine learning was
-’Distributed Inference for Latent Dirichlet Allocation’ in 2008
-\cite{newman2008distributed} One of the first instances of distributed machine
-learning  was  used  to  categorise  New York  Times  articles  using  Latent
-Dirichlet Allocation (LDA), which identifies the affiliations words have to
-certain topics. While the paper focused on parallelising the algorithm and
-running them over multiple artificially isolated cores the results showed that
-distributed machine learning could have scalability and didn’t impact the rate
-of convergence of the model significantly. This was followed by a paper by Jia
-et al. \cite{ParallelTopicModels} which produced much faster results than its
-predecessors by using memcache layer in every machine, every machine would
-message every other machine with updates of its local parameters to create an
-approximate global state, it was mentioned in passing that arranging the nodes
-in a star topology and caching the values that passed through it could make the
-system more scalable. After this followed a cambrian explosion of work in this
-area \cite{Ahmed2012YahooLDA, li2014communication, Dean2012Distbelief,
-googlemapreduce2008} culminating in 2014 when the parameter server as it is
-known today \cite{LI2014ParameterServers} was produced. This parameter server is
-highly sophisticated and flexible, accommodating the difference in hardware
-components while spending more on computation and less time waiting.
+
+One of the first instances of distributed machine learning was used to
+categorise New York Times articles using Latent Dirichlet Allocation (LDA),
+which identifies the affiliations words have to certain topics.
+\cite{newman2008distributed} While the paper focused on parallelising the
+algorithm and running them over multiple artificially isolated cores the results
+showed that distributed machine learning could have scalability and didn’t
+impact the rate of convergence of the model significantly. This was followed by
+a paper by Jia et al. \cite{ParallelTopicModels} which produced much faster
+results than its predecessors by using memcache layer in every machine, every
+machine would message every other with updates of its local parameters
+to create an approximate global state, it was mentioned in passing that
+arranging the nodes in a star topology and caching the values that passed
+through it could make the system more scalable. After this followed a cambrian
+explosion of work in this area \cite{Ahmed2012YahooLDA, li2014communication,
+Dean2012Distbelief, googlemapreduce2008} culminating in 2014 when the parameter
+server as it is known today \cite{LI2014ParameterServers} was produced.
 
 
 \subsection{Model and Data Parallelism}
@@ -81,36 +65,36 @@ components while spending more on computation and less time waiting.
         the green lines indicate local parameters being sent to the parameter
         server and red lines indicate parameters being sent to the worker nodes.}
 \end{figure}
-When creating distributed machine learning models there two different methods
+When creating distributed machine learning models there are two different methods
 for distributing training, model parallelism and data parallelism. These two
 methods are not mutually exclusive and can be used in conjunction with one
 another, such as in DistBelief. \cite{Dean2012Distbelief}. Model parallelism is
 when model parameters are split between the nodes. As data parallelism is when
-the data is split between the nodes. \cite{Xing2015Petuum} Often with model
+the training data is split between the nodes. \cite{Xing2015Petuum} Often with model
 parallelism the whole set of training data is passed through each node. While in
 data parallelism its common for each node to hold the whole machine learning
 model.
 
 The key advantage of model parallelism is that machine learning models can be
-far larger as they no longer have to sit on one machine. However this one great
-advantage comes with some disadvantages. Some parameters may take more time to
-converge than others, this means that at times some nodes may be idle while
-others are still converging, so the spread of computation is not equal or
-efficient. \cite{Dean2012Distbelief} Because some parameters converge at
-different rates a scheduler can be used, which does improve model convergence.
-However this requires more computational overhead and communication and reduces
-iteration throughput.
+far larger as they no longer have to train the whole model on one machine.
+However this one great advantage comes with some disadvantages. Some parameters
+may take more time to converge than others, this means that at times some nodes
+may be idle while others are still converging, so the spread of computation is
+not equal or efficient. \cite{Dean2012Distbelief} Because some parameters
+converge at different rates a scheduler can be used, which does improve model
+convergence. However this requires more computational overhead and communication
+while reducing iteration throughput.
 \cite{kim2016STRADS}
 
 Data parallelism has the benefit that data throughput can be very large, making
-processing using this method very fast. However with more nodes the
+processing using this method fast. However with more nodes, the
 communication overhead increases as the nodes must communicate the changes in
-their model parameters to each other. \cite{elgabli2020gadmm}
+their model parameters to the parameter server. \cite{elgabli2020gadmm}
 
 \subsection{Model Consistency}
 Both of these parallel paradigms still function on the basis of a strictly
-iterative model, where communication is the limiting factor. Creating parameter
-server similar to how Googles map reduce algorithm is implemented
+iterative model, where communication is the limiting factor. Creating a generic
+parameter server similar to how Googles map reduce algorithm is implemented
 \cite{googlemapreduce2008} is still in some sense sequential. The next iteration
 can't continue until all workers have responded with their updated parameters,
 and each worker must send its results back no matter how significant its work
@@ -121,7 +105,7 @@ when time, not data is at a premium.\cite{li2014communication}
 Partially relaxing the iterative restraint of the parameter server and instead
 using a bounded delay, dramatically decreases the wait times of workers to
 almost 0. A bounded delay allows workers to operate on slightly stale
-parameters. Unintuitive this allows for faster convergence than the sequential
+parameters. Unintuitively this allows for faster convergence than the sequential
 model, as it can iterate over the data faster and learn almost as much from each
 iteration. \cite{li2014communication}.
 \par
@@ -163,8 +147,8 @@ remain above a non trivial amount of data. Unfortunately the majority of machine
 learning algorithms use a stochastic method which means a very large number of
 iterations \((I_A(\epsilon))\) that take a short amount of time (small \(T_A\)).
 You can see that no matter how small \(c\) is there will be a significant impact
-of the time taken. In fact with a naive approach of communication each iteration
-almost certainly \(c > T_A\).
+of the time taken. In fact with a naive approach of communication \(c > T_A\) is
+almost certainly true for each iteration.
 
 However this view doesn't take into account the possibility that communication
 could happen at the same time as an iteration. For example imagine a pipeline of
@@ -187,14 +171,14 @@ accuracy through large models and vast amounts of training data, energy
 consumption and efficiency has rarely been taken into consideration. However
 with the rise of Internet of Things (IoT) devices and the established ubiquity
 of smart phones more data than ever is being produced. Soon this data generation
-with exceed the capacity of the internet, and experts estimate that over 90\% of
+will exceed the capacity of the internet, and experts estimate that over 90\% of
 data will be stored and processed locally. \cite{Chaing2016FogIoT} By extension
 this means machine learning algorithms will have to be performed locally too.
 This introduces some challenging issues. Modern machine learning algorithms
-require vast computational power and large amounts of data. Local devices don't
-have the capacity to hold large data sets or the power to compute large machine
-learning models in a viable amount of time, while many of them are also battery
-powered so power consumption becomes another issue.
+require vast centralised computational power and large amounts of data. Local
+devices don't have the capacity to hold large data sets or the power to compute
+large machine learning models in a viable amount of time, while many of them are
+also battery powered so power consumption becomes another issue.
 
 % modern solutions for edge computing 
 A solution to this is to massively distribute the model over multiple
@@ -221,16 +205,4 @@ Therefore the model can be build in real time as actions occur. The data
 produced on the mobile itself may not be enough to effectively train the model,
 but via communication with other users distributed over the network the model
 can converge. \cite{konevcny2016federated}
-
-% there has not been much work done in low power distributed setting
-From the research available there seems to be research into distributed
-computing on local devices, investigation in to power measurements of machine
-learning algorithms \cite{wang2018EdgeLearning, konevcny2016federated} and
-power reduction of machine learning algorithms on local devices.
-\cite{garciaMartin2019MLEnergy} But there is a distinct lack of research into
-efficiency of \textit{distributed algorithms} from the perspective of efficiency
-and power consumption on local devices. Having a more power efficient
-distributed machine learning algorithm, even if the optimisation was marginal on
-each device, would have an enormous effect on the output of the system, as many
-devices are connected.
 

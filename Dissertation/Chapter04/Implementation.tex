@@ -131,8 +131,7 @@ parameters. This is part of the code which initialises the matrices in the layer
     {val, new_state} = :rand.normal_s(0, 1 / col, seed_state)
     {col, :xavier, new_state, [val | acc]}
   end
-\end{lstlisting}
-You can find the wider context for this code snippet in code listing in the Appendix 1. ~\ref{network_initialisation} 
+\end{lstlisting} 
 
 
 \subsubsection{Forward Propagation}
@@ -269,8 +268,7 @@ multi class classification. It takes two inputs, an output vector \(y\) of the n
 This implementation in my code is similar, but removed redundant computation in
 the cases where \(t_{i} = 0\) the cost will always be 0. Here we also catch
 situations where the activation underflows to 0, which would result in a math
-error as (\(log(0)\) is undefined). For the full code example see the code listing
-~\ref{cost_function} in the appendix.
+error as (\(log(0)\) is undefined).
 \begin{lstlisting}
 defmodule CategoricalOutputLayer
   def loss(activation, target_activation) do
@@ -283,6 +281,15 @@ defmodule CategoricalOutputLayer
         end).()
   end
 
+  defp get_target_category(target_activation) do
+    {row, _col} = Matrex.size(target_activation)
+
+    Enum.map(1..row, fn x -> [x] end)
+    |> Matrex.new()
+    |> Matrex.multiply(target_activation)
+    |> Matrex.sum()
+    |> round()
+  end
   ...
 \end{lstlisting}
 
@@ -383,7 +390,7 @@ biases w.r.t the cost in the hidden layers:
     \item \( Z \) is a \( n \times 1 \) sum of the matrix multiplication and bias
     \item \(A^{L-2} \) is a \( l \times 1 \) activation of the previous layer
 \end{itemize}
-
+\clearpage
 The differential of the ReLU function.
 \begin{equation}
     \begin{aligned}
@@ -620,7 +627,7 @@ parameters can be distributed between the layers.
 Another major advantage is decreased communication between nodes. A non-model
 parallel parameter server will always send more data for a
 layer of the same size. This can be shown to be true thus.
-
+\clearpage
 The amount of arbitrary units of data sent from a parameter server to a worker
 where \(n\) is the input size and \(m\) is the output size. Where \( m \geq 1\)
 and \( n \geq 1\) the this can be shown to be:

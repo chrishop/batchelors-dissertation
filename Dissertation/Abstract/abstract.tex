@@ -15,13 +15,13 @@
 % comparative systems.
 
 There is no argument that large scale datasets have never been more available
-than they have now. Naturally, machine learning algorithms have been applied to
+than they are now. Naturally, machine learning algorithms have been applied to
 these datasets to derive useful information from them. Machine learning models
 have scaled with the data. Our machines have scaled too, using distributed
 frameworks such as parameter servers in order to complete machine learning tasks
 in a feasible amount of time. However our current methods are reaching their
-limits, as the communication between nodes can overwhelm the limited bandwidth
-between them.
+limits, as the communication between distributed nodes can overwhelm the limited
+bandwidth between them.
 
 This paper describes a novel paradigm for distributed machine learning
 \textit{RingTMP}. This ring topological model parallel neural networking
@@ -29,8 +29,9 @@ framework aims to reduce the amount of communication between nodes, while still
 training just as fast and as accurately as a generic comparative parameter
 server. This framework along with a non distributed neural network and a generic
 parameter server is trained on the Iris and MNIST numbers datasets. The results
-show that RingTMP converges faster than the parameter server while in some tests
-reducing data transmission as much as 380x per epoch and as much as 8x per unit time.
+show that RingTMP converges at least as fast as the parameter server, while in
+some tests dramatically reducing data transmission as much as 380x per epoch and
+as much as 8x per unit time.
 
 \end{abstract}
 \vspace{\fill}

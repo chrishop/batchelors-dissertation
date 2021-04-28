@@ -178,6 +178,7 @@ piecewise non-linear function described as such:
 \begin{equation}
     relu(z) = max(0,z)
 \end{equation}
+\clearpage
 This function has become the de facto activation function in dense hidden
 layers since its debut in 2011. \cite{glorot2011deep}. In Elixir the forward
 action in the hidden layer is implemented like so: \footnote{The pipe operator
@@ -445,7 +446,7 @@ We use the learning rate like so:
         \Delta W = \frac{\partial c}{\partial W} \cdot \text{learning rate} 
     \end{aligned}
 \end{equation}
-
+\clearpage
 In my code you can see that I use the exact same equations as in the mathematics.
 In the output layer:
 \begin{lstlisting}
@@ -684,7 +685,7 @@ def init({node_type, m_node, this_node, prev_node, next_node, nn_opts}) do
   {:ok, {node_type, m_node, this_node, prev_node, next_node, %{}, %{}, %{accuracy: 0, cost: 0}, 0, false, nn_opts}}
 end
 \end{lstlisting}
-
+\clearpage
 Implementing the forward propagation code in the master node looks like so:
 \begin{lstlisting}
   # client code

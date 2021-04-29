@@ -9,12 +9,12 @@ Machine Learning has become an invisible but ubiquitous part of modern life, and
 is being used in a plethora of fields and industries. The uses of this
 technology range from dystopian facial recognition
 \cite{mattBurgessFacialRecognision} to lifesaving diagnoses
-\cite{Mammograms2020} and many more purposes besides. Machine Learning leverages
-existing data to train machine learning models in order to perform a task or
-find patterns that previously only a human could. The key difference between
-machine learning and conventional analysis software is that the data itself is
-used to develop the model. Therefore the quality and quantity of the data can
-affect the effectiveness of a machine learning model.
+\cite{Mammograms2020} and many more purposes besides. machine learning leverages
+existing data to train models in order to perform a task or find patterns that
+previously only a human could. The key difference between machine learning and
+conventional statistical analysis models is that the data itself is used to
+develop it. Therefore the quality and quantity of the data can affect the
+effectiveness of a machine learning model.
 \par
 As the amount and complexity of the data we are collecting increases, so does the
 size and complexity of the machine learning models we use to make sense of our
@@ -24,7 +24,7 @@ terabytes. \cite{piergiovanni2020avid} We are now reaching a point where the
 limiting factor of creating a machine learning model is not the data, but the
 machine learning algorithm itself.
 \par
-This problem is this. Machine learning models are getting very, very large. For
+The problem is this. Machine learning models are getting very large. For
 instance GPT-3 the largest NLP model ever trained contains 175 billion
 parameters. \cite{fewshowlearners2020gpt} And efforts are being made to create
 models with trillions of parameters. \cite{rajbhandari2020zero} We have reached
@@ -34,13 +34,13 @@ and larger models, but the algorithms used to train these are inherently
 sequential and difficult to parallelise.
 \par
 The popular current solution is to use a parameter server model. In brief the
-paradigm is made of two different types of components. The parameter server and
+paradigm is made of two different types of components, the parameter server and
 the workers. The parameter server holds the global parameters of the model.
 Workers each hold a separate set of training data and are given the model
-parameters by the parameter server. The workers then use an iterative ML
-algorithm to modify the parameters. The modified parameters are then sent to the
-parameter server where they are aggregated, the global model parameters are
-updated and the cycle continues until the model has converged on an answer.
+parameters by the server. The workers then use an iterative algorithm to modify
+the parameters. The modified parameters are then sent to the parameter server
+where they are aggregated, the global model parameters are updated and the cycle
+continues until the model has converged on an answer.
 
 While this method has many benefits and is certainly faster than training using
 a single machine, it has two key limiting factors. First, every worker must
@@ -57,14 +57,12 @@ framework: \textit{RingTMP}. RingTMP is a Ring Topological Model Parallel
 distributed machine learning framework focusing on optimising distributed
 gradient descent. This is a novel design drawing in inspiration much research
 but particularly from the STRADS and DistBelief machine learning frameworks.
-\cite{kim2016STRADS,Dean2012Distbelief}
-\par
-I believe my distributed framework may have some advantages over the current
-paradigm, these briefly are:
+\cite{kim2016STRADS,Dean2012Distbelief} I believe my distributed framework may
+have some advantages over the current paradigm, these briefly are:
 \begin{itemize}
     \item There will be less communication between nodes
     \item A Potential for larger communication bandwidth between nodes
-    \item My framework will be able to hold larger models, given the same resources
+    % \item My framework will be able to hold larger models, given the same resources
 \end{itemize}
 
 My aims more specifically for this project are to:
@@ -72,10 +70,12 @@ My aims more specifically for this project are to:
     \item Create a prototype RingTMP framework.
     \item Create a parameter server model framework.
     \item Demonstrate less communication between nodes
-    \item Demonstrate that RingTMP is at least as scalable than a generic parameter
+    \item Demonstrate that RingTMP is at least as scalable as a generic parameter
     server
     \item Demonstrate RingTMP can train neural networks to at least the same
-    accuracy in at least the same amount of time as an equivalent parameter server
+    accuracy as a generic parameter server
+    \item Demonstrate RingTMP can train neural networks in at least the same
+    amount of time as a generic parameter server
 \end{itemize}
 
 \subsection{Overview}
@@ -86,7 +86,6 @@ This document is split up into the following sections:
  \item \textbf{Problem Description} Description of the problem aiming to be solved.
  \item \textbf{Implementation} Details of the implementation of the solution.
  \item \textbf{Results} Experimental results and analysis
- \item \textbf{Reflection} A small section reflecting on the project
  \item \textbf{Conclusion} Summary of the project and the paper.
 \end{itemize}
 

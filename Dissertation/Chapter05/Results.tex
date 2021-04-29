@@ -7,10 +7,12 @@ In the introduction I stated these aims:
     \item To create a prototype RingTMP framework.
     \item To create a parameter server model framework.
     \item To demonstrate less communication between nodes
-    \item To demonstrate that RingTMP is at least as scalable than a generic parameter
+    \item To demonstrate that RingTMP is at least as scalable as a generic parameter
     server
-    \item To demonstrate RingTMP can train neural networks to at least the same
-    accuracy in at least the same amount of time as an equivalent parameter server
+    \item Demonstrate RingTMP can train neural networks to at least the same
+    accuracy as a generic parameter server
+    \item Demonstrate RingTMP can train neural networks in at least the same
+    amount of time as a generic parameter server
 \end{itemize}
 
 As can be seen in the implementation section the first two aims have been
@@ -18,16 +20,17 @@ completed. Now using experimental results it will be shown to what degree the
 other aims were completed.
 
 For experimental results we needed datasets that we could use to train the
-neural networks. The first dataset chosen was the iris dataset, this is a
+neural networks. The first dataset chosen was the Iris dataset, this is a
 dataset which describes the the length and width of sepals and petals from 3
 different species of flower. This dataset was chosen because of its small
 feature dimension and limited examples (150), to see how well the different
-network types would be effected by small feature dimension.
+network types would be effected by small feature dimension and limited examples
+to learn from.
 
 The second dataset used was the MNIST numbers dataset. \cite{lecun2010mnist}
 This second dataset contrasts the first. Firstly this is because it has a
 comparatively greater feature input of 784 (a flattened 28 by 28 image).
-Secondly it a large testing and training set of 60000 training example and 10000
+Secondly it a large testing and training set of 60000 training examples and 10000
 test examples.
 
 Several experiments were carried out. The first experiment was training models
@@ -36,7 +39,7 @@ and was performed on the single node implementation of the neural network, the
 parameter server implementation and the RingTMP implementation. Each
 implementation used the same neural network model, consisting of 4 layers of
 node numbers 4,8,8,3. The parameter server was configured with 1 server and 2
-workers (3 nodes in total) and RingTMP was configured with 3 nodes 1 master 2
+workers (3 nodes in total) and RingTMP was configured with 3 nodes (1 master 2)
 workers. Both these are using the same number of nodes and should represent
 comparative performance. Every test session ran for at most 100 epochs, or until the
 test result failed to improve for 3 epochs.
@@ -55,8 +58,6 @@ model was used. This has to be done as RingTMP is a model parallel framework, it
 can only scale to as many layers the neural network has. Each test is repeated 5
 times and changes the amount of nodes each framework uses, to see whether its
 speed increases or decreases over time.
-
-% section about training?
  
 
 \subsection{Accuracy}
@@ -72,10 +73,10 @@ Here we see a box plot with the distribution of highest accuracies of each
 training session for both the Iris and MNIST datasets. All distribution types
 performed well on the Iris dataset each reaching a perfect score. Applying a two
 tailed hypothesis Mann-Whitney U test where \(\alpha = .05\) shows that there
-isn't enough statistical significant to show they are sampled from a different
+isn't enough statistical significance to show they are sampled from a different
 population. Whereas its clear in the MNIST testing that RingTMP's accuracy was
 not as high as the others. Applying the Mann-Whitney U test again shows that
-Single Node and Parameter Server implementation are likely to have the same
+single node and parameter server implementation are likely to have the same
 performance distribution. RingTMP's accuracy was much lower than the other two
 approaches. This was because it only took a short amount of time to complete an
 epoch, but had a slower learning rate per epoch. The other two distributions
@@ -104,20 +105,20 @@ From this violin plot observe how quickly and consistently RingTMP can iterate
 through each epoch (always between 7-12 seconds), this could be in part due to
 the higher throughput and concurrent nature of the RingTMP network however it
 must also be recognised that this may also be due to a bug. While also notice
-the top heavy distribution of the parameter servers timings, more often than not
+the top heavy distribution of the parameter server's timings, more often than not
 taking over 250 seconds for a single epoch, even slower than the single node
 timings. Which I suspect is due to the transmission of parameters to nodes and
 the time taken to aggregate parameters by the parameter server. However while
 RingTMP epochs are faster, its seems to learn less from each epoch.
 
 In the second chart of the figure we can see that RingTMP, while its learning is
-a little more irratic seems to learn at the same rate as a single node, when
+a little more irratic seems to learn at the same rate as a single node network, when
 given a higher epoch limit. We can also see how much we were stunting RingTMP's
 performance by limiting it to only 20 epochs, observe the red line being cut
 short only 150 seconds into training. We can also see the parameter servers slow
 rate of learning relative to the other two methods, although eventually it
 achieved a higher accuracy than the other two.
-
+\clearpage
 \subsection{Scalability}
 \begin{figure}[h]
     \centering
@@ -128,11 +129,10 @@ To be a good distributed model, a model must be able to handle many nodes
 without performance decreasing. However adding and removing nodes in each of
 these models should have a different effect on the timing of epochs. We can see
 that the parameter server shows a inversely proportional relationship between
-the timing of an epoch and the number of nodes. However the results for the
-RingTMP show a flat line. What would be expected is that the more more nodes the
-model has the faster it would train, while the computation of the nodes is the
-limiting factor. You could read the results of the RingTMP this way, although to
-be sure you would need more evidence of the time waiting in comparison to processing.
+the timing of an epoch and the number of nodes, as we would expect. However the
+results for the RingTMP network shows a flat line. What would be expected is
+that the more nodes the model has the faster it would train, but this result is
+a little baffling but seems related to the results in timing
 
 \subsection{Communication}
 \begin{figure}[h]
@@ -147,14 +147,14 @@ monitored. On the right figure we can see that RingTMP has clearly achieved its
 key goal of reducing communication between the nodes. Using the MNIST network of
 4 layers and 784,50,50,10 node configuration it was shown that RingTMP
 communicates \(1.32 \times 10^{7}\) values each epoch. However the parameter
-server communicates \( 5.0772 \times 10^{9}\) each epoch, two orders of
-magnitude more. However we know that RingTMP epochs are far faster than
-parameter server epochs. To make a comparison about values communicated per unit
-time we can take the fastest RingTMP epoch (7 seconds) and the slowest parameter
-server epoch (333.5 seconds). In this case for every parameter server epoch
-47.643 (3.dp) RingTMP epochs occur. Even in this most extreme situation the
-RingTMP network still communicates less, as can be seen from the above figure on
-the left.
+server communicates \( 5.0772 \times 10^{9}\) each epoch, a reduction of over
+380 times. However we know that RingTMP epochs are far faster than parameter
+server epochs. To make a comparison about values communicated per unit time we
+can take the fastest RingTMP epoch (7 seconds) and the slowest parameter server
+epoch (333.5 seconds). In this case for every parameter server epoch 47.643
+(3.dp) RingTMP epochs occur. Even in this most extreme situation the RingTMP
+network still communicates 8 times less, as can be seen from the above figure on the
+left.
 
 
 \subsection{Summary}

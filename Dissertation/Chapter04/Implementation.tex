@@ -9,18 +9,18 @@ from scratch. Therefore its necessary to used existing tools, to make the
 development viable in the time given. This is difficult as not many languages
 lend themselves to both distributed systems and neural networks.
 
-To ensure high performance the project could be implemented in C++. While C++ is
+To ensure high performance the project could be implemented in C++. C++ is
 often very performant and also has low level bindings for ML libraries such as
 TensorFlow. However even the creator of the language sees the need to improve
-its ability to improve its distributed performance. \cite{stroustrupInterview}
+its distributed performance. \cite{stroustrupInterview}
 
 Python has great tooling for neural networking, such as TensorFlow
 \cite{abadi2016tensorflow}, and PyTorch \cite{paszke2019pytorch}. Moreover it
 has great support for numerical computing with NumPy \cite{harrisNumpy2020}.
-These are performant too, by calling C functions or creating code which is
+These are performant too, either by calling C functions or creating code which is
 optimised to run on GPUs to parallelise computation. However due to the Global
 Interpreter Lock (GIL) python is infamously bad at concurrency, while its
-distributed tooling is implemented in native python code, which lack of speed
+distributed tooling is implemented in native python code, which lacks speed
 and could bottleneck the performance gained from using NumPy and TensorFlow.
 
 Ultimately I decided to use Elixir as the programming language of
@@ -34,15 +34,15 @@ application protocol on top of TCP/IP. Meaning its as easy to communicate with
 local processes on your own machine as processes on another machine running an
 Elixir program. Its also been used by artificial intelligence researchers before
 as the process concurrency models effortlessly lends itself to modelling
-neurons. \cite{sherNeuroevolutionThroughErlang} Using Elixirs native float and
-arithmetic implementation would be slower than a C++ or a NumPy implementation,
-luckily there is a stable package which supports matrix calculations even faster
+neurons. \cite{sherNeuroevolutionThroughErlang} Using Elixir's native float and
+arithmetic implementation would be slower than a C++ or a NumPy implementation.
+Luckily, there is a stable package which supports matrix calculations even faster
 than those in NumPy called Matrex. \cite{matrex}
 
 The only drawback of using Elixir is at the time of development it didn't have a
 strong machine learning library, which means implementing the mathematics of the
 neural network myself. While this was a sizeable amount of work to do, it had
-the benefit that I didn't to wrestle with an opinionated API such as TensorFlow,
+the benefit that I didn't need to wrestle with an opinionated API such as TensorFlow,
 I could create my own API to meet my ends.
 
 \subsection{Neural Network Implementation}
@@ -58,11 +58,15 @@ outputs the activations as probabilities. Within this section I will explain in
 more detail how the neural network was implemented from scratch and the
 mathematics behind its function.
 
+All of the supporting code for my implementation of the neural network the
+parameter server model and the RingTMP framework can be found in this
+repository: https://github.com/chrishop/bachelor-dissertation-supporting-code
+
 % creating a network should go here first
 \subsubsection{Initialisation}
-Neural networks are composed of layers, while conceptually layers are
-composed of neurons, they're practically implemented with two components. A
-weights matrix and a bias vector. As I have already mentioned in this network
+Neural networks are composed of layers. While conceptually layers are
+composed of neurons, they're practically implemented with two components, a
+weights matrix and a bias vector. As I have already mentioned, in this network
 there are two types of layers, hidden layers and output layers. We need to label
 each layer with its type, so we know how to perform forward and
 backpropagation. Therefore we can describe a layer as the tuple:
@@ -77,13 +81,13 @@ Placing several of these tuples in a list creates a network:
                 {:output_layer, weights_3, bias_3}]
 \end{lstlisting}
 
-The weights and biases have different dimensions depending on the layers input
-size and output size. A layer might take an activations vector with a size of
+The weights and biases have different dimensions depending on the layer's input
+size and output size. A layer might take an activation vector with a size of
 \(m\) and output a size of \(n\). The layer would hold a \(n \times m\) matrix
 and the dimensions of the bias would be \(n \times 1\). The output size of one
 layer must be the input size of the next layer. Initialising the biases is
-simple, as biases have the function of an intercept in a linear equation, they
-can be initialised to 0. The trivial code is below:
+simple, as biases have the function similar to that of an intercept in a line
+equation, they can be initialised to 0. The trivial code is below:
 \begin{lstlisting}
   defp initialise_bias(col) do
     Matrex.zeros(col, 1)
@@ -131,21 +135,20 @@ parameters. This is part of the code which initialises the matrices in the layer
     {val, new_state} = :rand.normal_s(0, 1 / col, seed_state)
     {col, :xavier, new_state, [val | acc]}
   end
-\end{lstlisting}
-You can find the wider context for this code snippet in code listing in the Appendix 1. ~\ref{network_initialisation} 
+\end{lstlisting} 
 
 
 \subsubsection{Forward Propagation}
-In forward propagation we give an input vector and an output vector is returned.
-In order for that to happen the input vector is passed through each layer, each
-time being transformed by the weights, bias and activation function of that
-layer. The input to the network could be measurements describing a flower (like
-in the setosa dataset), the output layer could describe which species. More
-broadly put, the input described the features, and the output predicts the
-categories to which those features belong.
+In forward propagation we give an input vector to a network and an output vector
+is returned. In order for that to happen the input vector is passed through each
+layer, each time being transformed by the weights, bias and activation function
+of that layer. The input to the network could be measurements describing a
+flower (like in the Iris dataset), the output layer could describe which
+species. More broadly put, the input described the features, and the output
+predicts the categories to which those features belong.
 
-On a layer level forward propagation is performed by taking the input vector
-multiplying it with the weights matrix, after which you add the bias and apply
+On a layer level forward propagation is performed by taking the input vector and
+multiplying it with the weights matrix. After which you add the bias and apply
 the activation function. The output of this is then passed to the next layer, or
 if its the last layer, output as the network prediction result. The generic
 mathematics of a forward function is described below in this linear equation
@@ -178,7 +181,8 @@ piecewise non-linear function described as such:
 \begin{equation}
     relu(z) = max(0,z)
 \end{equation}
-This function has become the de facto application function in dense hidden
+\clearpage
+This function has become the de facto activation function in dense hidden
 layers since its debut in 2011. \cite{glorot2011deep}. In Elixir the forward
 action in the hidden layer is implemented like so: \footnote{The pipe operator
 \lstinline{|>} transforms the function \lstinline{val_a |> a_function(val_b)}
@@ -203,8 +207,7 @@ defmodule HiddenLayer
 
 The output layer uses a more complex activation function, the softmax function,
 which transforms its inputs into probabilities. The sum of these probabilities
-is always 1. This is the softmax function, where \(z\) is a \(i \times 1\)
-vector:
+is always 1. This is the softmax function:
 \begin{equation}
     softmax(z)_{i} = \frac{e^{z_{i}}}{\sum_{j=1}^{n} e^{z_{j}}}
 \end{equation}
@@ -233,7 +236,6 @@ Propagating forward through the layers happens by using the output of one
 layer as the input to the next, performing a slightly different forward action
 depending on the layer:
 
-PUT IN APPENDIX
 \begin{lstlisting}
 defmodule FeedForwardNetwork.Forward do
   def forward(network, input_vector) do
@@ -267,11 +269,10 @@ multi class classification. It takes two inputs, an output vector \(y\) of the n
     cost(t, y) = - \sum_{i}^{C} t_{i}log(y_{i})
 \end{equation}
 
-This implementation is similar, but removed redundant computation in the cases
-where \(t_{i} = 0\) the cost will always be 0. Here we also catch situations
-where the activation underflows to 0, which would result in a math error as
-\(log(0)\) is undefined. For the full code example see the code listing
-~\ref{cost_function} in the appendix.
+This implementation in my code is similar, but removed redundant computation in
+the cases where \(t_{i} = 0\) the cost will always be 0. Here we also catch
+situations where the activation underflows to 0, which would result in a math
+error as (\(log(0)\) is undefined).
 \begin{lstlisting}
 defmodule CategoricalOutputLayer
   def loss(activation, target_activation) do
@@ -284,18 +285,28 @@ defmodule CategoricalOutputLayer
         end).()
   end
 
+  defp get_target_category(target_activation) do
+    {row, _col} = Matrex.size(target_activation)
+
+    Enum.map(1..row, fn x -> [x] end)
+    |> Matrex.new()
+    |> Matrex.multiply(target_activation)
+    |> Matrex.sum()
+    |> round()
+  end
   ...
 \end{lstlisting}
 
 
 \subsubsection{Back Propagation}
 The result of the cost function represents the error within the network,
-backpropagation adjusts the weights and biases to minimise the loss within the
-network. Meaning that if the same input was given to the network again after
-backpropagation, the output would be closer to the target, than before
-backpropagation had occurred. The changes to the weights and bias of each layer
-can be calculated by using the chain rule, to discover the relationship between
-the weights and biases with respect to the loss.
+backpropagation adjusts the weights and biases to minimise the loss
+\footnotetext{Cost and loss are used interchangeably here, for reference loss is
+the error produced from a single training example, the cost is the average loss
+over the whole dataset.} within the network. Meaning that if the same input was
+given to the network again after backpropagation, the output would be closer to
+the target. The changes to the weights and bias of each layer can be calculated
+by using the chain rule, this calculation starts with the loss.
 
 To calculate the change in weights and biases in the output layer, we first need
 to find the derivative of the cost function w.r.t the network output and the
@@ -308,7 +319,8 @@ derivative of the softmax function w.r.t \(z\).
     \end{aligned}
 \end{equation}
 
-Finding the derivative of the softmax is a little more complex:
+Finding the derivative of the softmax is a little more complex (supported
+workings from \cite{peterSadowski}:
 \begin{equation}
     \begin{aligned}
         &       &   a_{j} &= \frac{e^{z_{j}}}{\sum_{k=1}^{N} e^{z_{k}}} \\
@@ -382,7 +394,7 @@ biases w.r.t the cost in the hidden layers:
     \item \( Z \) is a \( n \times 1 \) sum of the matrix multiplication and bias
     \item \(A^{L-2} \) is a \( l \times 1 \) activation of the previous layer
 \end{itemize}
-
+\clearpage
 The differential of the ReLU function.
 \begin{equation}
     \begin{aligned}
@@ -445,7 +457,7 @@ We use the learning rate like so:
         \Delta W = \frac{\partial c}{\partial W} \cdot \text{learning rate} 
     \end{aligned}
 \end{equation}
-
+\clearpage
 In my code you can see that I use the exact same equations as in the mathematics.
 In the output layer:
 \begin{lstlisting}
@@ -503,7 +515,7 @@ parameters from each worker are averaged. This cycle repeats until the network
 is trained.
 
 Connecting the workers to the server is quite simple in Elixir, here is an
-example using the elixir language shell, iex:
+example using the Elixir language shell, iex:
 \begin{lstlisting}[basicstyle=\linespread{0.8}\ttfamily\footnotesize,numbers=none]
 Machine 1
 $ iex --name foo@192.168.1.11 --cookie shared_string
@@ -514,7 +526,7 @@ iex(bar@192.168.1.12)> Node.ping(:"foo@192.168.1.11")
 :pong
 \end{lstlisting}
 
-In elixir there is a concept of nodes which each node has its own name in the
+In elixir there is a concept of nodes where each node has its own name in the
 format of \lstinline{<application>@<local_ip>} you can have multiple nodes on a
 single machine, but if you need to communicate with nodes on another machine,
 you must set a cookie and ensure the cookie is the same on both the machines. In
@@ -541,7 +553,7 @@ variable holding the atom describing the node e.g.
 (\lstinline{workerone@192.168.1.14}) this indicates the specific process you
 want to send the task to. Within the async function the model, function and
 function arguments are expressed. This asynchronously returns a task struct
-which can be \lstinline{Task.await(task)} awaited upon. This means a batch can
+which can be (\lstinline{Task.await(task)}) awaited upon. This means a batch can
 be sent to each worker node at the same time and awaited on for the result. Like
 in the code below:
 \begin{lstlisting}[basicstyle=\linespread{0.8}\ttfamily\footnotesize]
@@ -571,8 +583,6 @@ parameter server.
   end
 \end{lstlisting}
 
-For the complete code look in the code appendix .... <PUT IN CODE APPENDIX>
-
 \subsection{RingTMP}
 The main product of my project is the RingTMP network, the name is an acronym
 for \textit{Ring Topological Model Parallel}. Its called as such because it has
@@ -581,7 +591,7 @@ RingTMP each node in the distributed network holds consecutive layers of the
 neural network, there are two types of node, the master node and the worker
 nodes. The master node holds the training and testing data. It also starts the
 forward propagation and back propagation process, while worker nodes receive
-messages from adjacent nodes which they process and then forward the message to
+messages from adjacent nodes which they process and then forward the messages to
 the next node.
 
 \begin{figure}[h]
@@ -600,10 +610,10 @@ locally. The intermediate result of that is send to the first worker node in the
 chain. Which uses the intermediate values to forward propagated through its
 neural network layers and send its results to the next node in the RingTMP
 network. This continues until the last worker node in the chain makes a
-prediction about the data given. This is then sent back to the master node which
+prediction about the data. This is then sent back to the master node which
 calculates the loss and sends that back to the worker. The worker then uses this
 to begin the backpropagation of errors back through the network. It first
-updates its own parameters based on the loss. Then passes back the remaining
+updates its own parameters based on the loss. Then passes the remaining
 error back to the node before it until all the parameters have been updated.
 
 This is different to the parameter server in several important ways. First the
@@ -621,7 +631,7 @@ parameters can be distributed between the layers.
 Another major advantage is decreased communication between nodes. A non-model
 parallel parameter server will always send more data for a
 layer of the same size. This can be shown to be true thus.
-
+\clearpage
 The amount of arbitrary units of data sent from a parameter server to a worker
 where \(n\) is the input size and \(m\) is the output size. Where \( m \geq 1\)
 and \( n \geq 1\) the this can be shown to be:
@@ -648,14 +658,6 @@ Given that \(n\) must be at least 1,  \( \frac{n+1}{2} \) must also be at least
 the initial value, we can say that the parameter server will always communicate
 as much or more information between nodes than RingTMP.
 
-A simple example of this can be given to show the reduction in communication
-between nodes. Take a two layer neural network the first layer having 784 input
-nodes and 50 output nodes, and the second layer had 50 input nodes and 10 output
-nodes. A worker sending updated weights back to a parameter server would have to
-communicate 39760 values (\( (784 \times 50) + (50 \times 10) = 39860\)).
-Whereas for the RingTMP model the same neural network split over two nodes would
-only need to communicate 120 values. Over 300 times less network communication.
-
 The final major advantage is the capacity for increased bandwidth between the
 nodes, which is built into the structure of the network. In a parameter server
 model all workers connect to a single parameter server, so the network have a
@@ -680,8 +682,8 @@ out the client and implementation code.
 
 First each node must be initialised, it takes its the \lstinline{node_type},
 this is either \lstinline{:master | :worker} and determines the behaviour of the
-node. \lstinline{m_node, this_node, prev_node, next_node} are all tuples which
-contain \{ process, node \} tuples which point to the 
+node. \lstinline{m_node, this_node, prev_node, next_node} are all variables which
+contain a \{ process, node \} tuple, which point to the 
 \lstinline{master, current, previous, next} nodes in the network respectively.
 The current node is then started and the initial state is set.
 \begin{lstlisting}
@@ -694,7 +696,7 @@ def init({node_type, m_node, this_node, prev_node, next_node, nn_opts}) do
   {:ok, {node_type, m_node, this_node, prev_node, next_node, %{}, %{}, %{accuracy: 0, cost: 0}, 0, false, nn_opts}}
 end
 \end{lstlisting}
-
+\clearpage
 Implementing the forward propagation code in the master node looks like so:
 \begin{lstlisting}
   # client code
@@ -741,21 +743,21 @@ Implementing the forward propagation code in the master node looks like so:
     {num, NeuralNet.forward(batch_data)}
   end
 \end{lstlisting}
-you may notice the use of batches. A batch is training data linked with a
-sequential ID, this is so we can track batches (\lstinline| {batch_id, data} |)
-through the network, the expected values (or labels for the data) have a
-corresponding ID so they can be matched to calculate loss and accuracy while
-testing and training. You can also see here the state is updated with the
-history, the input activations to the RingTmp node. We need this as an input
-parameter for the backpropagation function. The expecteds only the master node
-needs to hold, its a map of all the labels the corresponds to a piece of
-training data. We store the ID of the last training pair so we know when an
-epoch has finished. Finally the \lstinline{true} value sets the state of the
-network to busy so you can't accidentally train the network on two different
+you may notice the use of batches. A batch is an item of training data linked
+with a sequential ID, this is so we can track batches through the network, the
+expected values (or labels for the data) have a corresponding ID so they can be
+matched to calculate loss and accuracy while testing and training. You can also
+see here the state is updated with the history, which records the input
+activations of the RingTmp node. We need this to be stored so we can use it as
+an input parameter for the backpropagation function. The expecteds only the
+master node needs to hold, it's a map of all the labels the corresponds to a
+piece of training data. We store the ID of the last training pair so we know
+when an epoch has finished. Finally the \lstinline{true} value sets the state of
+the network to busy so you can't accidentally train the network on two different
 datasets.
 
-A worker receives \lstinline| {:forward, batch} | and continues the forward
-propagation for every batch it receives.
+A worker then receives \lstinline| {:forward, batch} | message from the master
+node and continues the forward propagation for every batch it receives.
 \begin{lstlisting}
   @impl true
   def handle_info({:forward, batch}, state = {:worker, _m_node, _this, _prev, next_node, history, _exp, _test_acc, _max_bid, busy, _nn_opts}) do
@@ -807,7 +809,7 @@ sends the error it produces back further.
   end
 \end{lstlisting}
 
-When this finally reaches the master node again is updates the parameters in its
+When this finally reaches the master node again it updates the parameters in its
 segment of the network, then changes the state of the RingTmp network to not busy
 if its processed the last batch.
 \begin{lstlisting}

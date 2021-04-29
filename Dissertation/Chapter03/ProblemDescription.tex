@@ -5,7 +5,7 @@
 
 % show the ideal situation
 In the most ideal world, communication between distributed network nodes would
-not to bottleneck performance. As many nodes as you liked could be added to your
+not bottleneck performance. As many nodes as you liked could be added to your
 network and performance would scale linearly with each node added.
 
 
@@ -21,9 +21,9 @@ increase the speed of training further by adding more nodes at least one of two
 things must happen. Either the bandwidth between each node must be increased or
 the nodes must communicate less while still communicating enough information to
 continue training.\cite{li2014communication}\cite{SunTimeDataflow} This limit in
-the rate of computation means that training a neural network cost more time and
+the rate of computation means that training a neural network costs more time and
 money. We are at the point now where even if mistakes are found in the largest
-projects, its often 'infeasible' to retrain the model due to time and monetary
+projects, it's often 'infeasible' to retrain the model due to time and monetary
 cost. \cite{fewshowlearners2020gpt}
 
 % Ultimately we want to make neural networks faster to train. The way this is
@@ -49,7 +49,7 @@ cost. \cite{fewshowlearners2020gpt}
 \par
 % the consequences if this is ignored
 The impact of leaving this problem unsolved will mean the limiting factor of
-distributed neural networking will be not the processing power of the nodes but
+distributed neural networking will not be the processing power of the nodes but
 the bandwidth between them, bandwidth being one of the scarcest resources in
 data centres \cite{LuizDatacenterAsAComputer}. It will stifle the growth of
 machine learning models, especially for those that cannot get the funding for high
@@ -59,7 +59,7 @@ This is why I designed a new paradigm for distributed neural networking that
 should reduce the communication between each node relative to a generic
 parameter server. The new paradigm also allows for higher bandwidth between
 adjacent nodes. As in this scenario nodes need only communicate with their
-adjacent partner. This results in a distributed learning model that isn't bound
+adjacent partners. This results in a distributed learning model that isn't bound
 by bandwidth when scaling, and should be able to train models to the same level
 of accuracy in the same amount of time.
 

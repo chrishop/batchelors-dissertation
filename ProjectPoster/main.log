@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.4.29)  29 APR 2021 15:12
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.4.29)  29 APR 2021 17:55
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -567,47 +567,79 @@ Package: iftex 2020/03/06 v1.0d TeX engine tests
 \Gm@layouthoffset=\dimen284
 \Gm@layoutvoffset=\dimen285
 \Gm@dimlist=\toks35
-))
-LaTeX Font Info:    Trying to load font information for T1+lmss on input line 15.
+)) (/usr/local/texlive/2021/texmf-dist/tex/latex/titlesec/titlesec.sty
+Package: titlesec 2019/10/16 v2.13 Sectioning titles
+\ttl@box=\box112
+\beforetitleunit=\skip81
+\aftertitleunit=\skip82
+\ttl@plus=\dimen286
+\ttl@minus=\dimen287
+\ttl@toksa=\toks36
+\titlewidth=\dimen288
+\titlewidthlast=\dimen289
+\titlewidthfirst=\dimen290
+)
+LaTeX Font Info:    Trying to load font information for T1+lmss on input line 19.
  (/usr/local/texlive/2021/texmf-dist/tex/latex/lm/t1lmss.fd
 File: t1lmss.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 ) (/Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
  (/usr/local/texlive/2021/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count299
-\scratchdimen=\dimen286
-\scratchbox=\box112
+\scratchdimen=\dimen291
+\scratchbox=\box113
 \nofMPsegments=\count300
 \nofMParguments=\count301
-\everyMPshowfont=\toks36
+\everyMPshowfont=\toks37
 \MPscratchCnt=\count302
-\MPscratchDim=\dimen287
+\MPscratchDim=\dimen292
 \MPnumerator=\count303
 \makeMPintoPDFobject=\count304
-\everyMPtoPDFconversion=\toks37
+\everyMPtoPDFconversion=\toks38
 ) (/usr/local/texlive/2021/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+ (/usr/local/texlive/2021/texmf-dist/tex/generic/infwarerr/infwarerr.sty
+Package: infwarerr 2019/12/03 v1.5 Providing info/warning/error messages (HO)
+) (/usr/local/texlive/2021/texmf-dist/tex/latex/grfext/grfext.sty
+Package: grfext 2019/12/03 v1.3 Manage graphics extensions (HO)
+ (/usr/local/texlive/2021/texmf-dist/tex/generic/kvdefinekeys/kvdefinekeys.sty
+Package: kvdefinekeys 2019-12-19 v1.6 Define keys (HO)
+)) (/usr/local/texlive/2021/texmf-dist/tex/latex/kvoptions/kvoptions.sty
+Package: kvoptions 2020-10-07 v3.14 Key value format for package options (HO)
+ (/usr/local/texlive/2021/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty
+Package: ltxcmds 2020-05-10 v1.25 LaTeX kernel commands for general use (HO)
+) (/usr/local/texlive/2021/texmf-dist/tex/generic/kvsetkeys/kvsetkeys.sty
+Package: kvsetkeys 2019/12/15 v1.18 Key value parser (HO)
+)) (/usr/local/texlive/2021/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty
+Package: pdftexcmds 2020-06-27 v0.33 Utility functions of pdfTeX for LuaTeX (HO)
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+)
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
+Package grfext Info: Graphics extension search list:
+(grfext)             [.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps]
+(grfext)             \AppendGraphicsExtensions on input line 504.
  (/usr/local/texlive/2021/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 )) ABD: EverySelectfont initializing macros
-LaTeX Info: Redefining \selectfont on input line 15.
+LaTeX Info: Redefining \selectfont on input line 19.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -617,14 +649,14 @@ LaTeX Info: Redefining \selectfont on input line 15.
 * layout: <same size as paper>
 * layoutoffset:(h,v)=(0.0pt,0.0pt)
 * modes: 
-* h-part:(L,W,R)=(28.45274pt, 540.60239pt, 28.45274pt)
+* h-part:(L,W,R)=(14.22636pt, 569.05515pt, 14.22636pt)
 * v-part:(T,H,B)=(0.0pt, 845.04684pt, 0.0pt)
 * \paperwidth=597.50787pt
 * \paperheight=845.04684pt
-* \textwidth=540.60239pt
+* \textwidth=569.05515pt
 * \textheight=845.04684pt
-* \oddsidemargin=-43.81725pt
-* \evensidemargin=-43.81725pt
+* \oddsidemargin=-58.04362pt
+* \evensidemargin=-58.04362pt
 * \topmargin=-109.26999pt
 * \headheight=12.0pt
 * \headsep=25.0pt
@@ -643,74 +675,109 @@ LaTeX Info: Redefining \selectfont on input line 15.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-LaTeX Font Info:    Trying to load font information for OML+lmm on input line 20.
+LaTeX Font Info:    Trying to load font information for OML+lmm on input line 24.
 (/usr/local/texlive/2021/texmf-dist/tex/latex/lm/omllmm.fd
 File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 20.
+LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 24.
  (/usr/local/texlive/2021/texmf-dist/tex/latex/lm/omslmsy.fd
 File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 20.
+LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 24.
  (/usr/local/texlive/2021/texmf-dist/tex/latex/lm/omxlmex.fd
 File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 20.
+(Font)              <10> on input line 24.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 20.
+(Font)              <7> on input line 24.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 20.
-LaTeX Font Info:    Trying to load font information for TS1+lmss on input line 63.
+(Font)              <5> on input line 24.
+LaTeX Font Info:    Trying to load font information for TS1+lmss on input line 68.
  (/usr/local/texlive/2021/texmf-dist/tex/latex/lm/ts1lmss.fd
 File: ts1lmss.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
+Underfull \hbox (badness 10000) in paragraph at lines 68--68
+[]\T1/lmss/m/n/12 Current dis-tributed ma-chine
+ []
+
+
+Underfull \hbox (badness 5667) in paragraph at lines 68--68
+\T1/lmss/m/n/12 learn-ing (DML) mod-els are
+ []
+
+
+Underfull \hbox (badness 5022) in paragraph at lines 68--68
+[]\T1/lmss/m/n/12 Can we de-crease com-mu-ni-
+ []
+
+<./images//worst_case_communication.png, id=4, 462.528pt x 346.896pt>
+File: ./images//worst_case_communication.png Graphic file (type png)
+<use ./images//worst_case_communication.png>
+Package pdftex.def Info: ./images//worst_case_communication.png  used on input line 68.
+(pdftex.def)             Requested size: 161.94595pt x 121.45775pt.
+<./images//mnist_accuracy_200.png, id=6, 462.528pt x 379.4175pt>
+File: ./images//mnist_accuracy_200.png Graphic file (type png)
+<use ./images//mnist_accuracy_200.png>
+Package pdftex.def Info: ./images//mnist_accuracy_200.png  used on input line 68.
+(pdftex.def)             Requested size: 161.94595pt x 132.84442pt.
+
+Underfull \hbox (badness 5359) in paragraph at lines 68--68
+\T1/lmss/m/n/12 duced slightly less ac-cu-rate
+ []
+
+<./images//ringtmp_example.png, id=7, 297.11pt x 285.065pt>
+File: ./images//ringtmp_example.png Graphic file (type png)
+<use ./images//ringtmp_example.png>
+Package pdftex.def Info: ./images//ringtmp_example.png  used on input line 94.
+(pdftex.def)             Requested size: 110.96584pt x 106.46848pt.
+<./images//parameter_server.png, id=8, 342.27875pt x 302.12875pt>
+File: ./images//parameter_server.png Graphic file (type png)
+<use ./images//parameter_server.png>
+Package pdftex.def Info: ./images//parameter_server.png  used on input line 94.
+(pdftex.def)             Requested size: 110.96584pt x 97.94633pt.
+<./images//mnist_accuracy_over_time.png, id=9, 462.528pt x 346.896pt>
+File: ./images//mnist_accuracy_over_time.png Graphic file (type png)
+<use ./images//mnist_accuracy_over_time.png>
+Package pdftex.def Info: ./images//mnist_accuracy_over_time.png  used on input line 94.
+(pdftex.def)             Requested size: 153.6454pt x 115.23296pt.
+<images/mnist_timing_violinplot.png, id=10, 462.528pt x 346.896pt>
+File: images/mnist_timing_violinplot.png Graphic file (type png)
+<use images/mnist_timing_violinplot.png>
+Package pdftex.def Info: images/mnist_timing_violinplot.png  used on input line 94.
+(pdftex.def)             Requested size: 153.6454pt x 115.23296pt.
+<images/project_qr_code.png, id=11, 301.125pt x 374.39874pt>
+File: images/project_qr_code.png Graphic file (type png)
+<use images/project_qr_code.png>
+Package pdftex.def Info: images/project_qr_code.png  used on input line 99.
+(pdftex.def)             Requested size: 74.76184pt x 92.95566pt.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 63.
+(Font)              <12> on input line 99.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 63.
+(Font)              <8> on input line 99.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 63.
-<./images//icons8-ecg-96.png, id=4, 72.27pt x 72.27pt>
-File: ./images//icons8-ecg-96.png Graphic file (type png)
-<use ./images//icons8-ecg-96.png>
-Package pdftex.def Info: ./images//icons8-ecg-96.png  used on input line 63.
-(pdftex.def)             Requested size: 170.69412pt x 170.70345pt.
-<./images//icons8-stocks-80.png, id=6, 60.225pt x 60.225pt>
-File: ./images//icons8-stocks-80.png Graphic file (type png)
-<use ./images//icons8-stocks-80.png>
-Package pdftex.def Info: ./images//icons8-stocks-80.png  used on input line 75.
-(pdftex.def)             Requested size: 81.09117pt x 81.09897pt.
-File: ./images//icons8-stocks-80.png Graphic file (type png)
-<use ./images//icons8-stocks-80.png>
-Package pdftex.def Info: ./images//icons8-stocks-80.png  used on input line 75.
-(pdftex.def)             Requested size: 81.09117pt x 81.09897pt.
-<images/qr-code.png, id=7, 301.125pt x 382.42876pt>
-File: images/qr-code.png Graphic file (type png)
-<use images/qr-code.png>
-Package pdftex.def Info: images/qr-code.png  used on input line 80.
-(pdftex.def)             Requested size: 73.19043pt x 92.95566pt.
-<images/blue_swansea_logo.jpg, id=8, 903.375pt x 903.375pt>
+(Font)              <6> on input line 99.
+<images/blue_swansea_logo.jpg, id=12, 903.375pt x 903.375pt>
 File: images/blue_swansea_logo.jpg Graphic file (type jpg)
 <use images/blue_swansea_logo.jpg>
-Package pdftex.def Info: images/blue_swansea_logo.jpg  used on input line 80.
+Package pdftex.def Info: images/blue_swansea_logo.jpg  used on input line 99.
 (pdftex.def)             Requested size: 92.94803pt x 92.95566pt.
- [1
+[1
 
-{/usr/local/texlive/2021/texmf-var/fonts/map/pdftex/updmap/pdftex.map} </Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/./images//icons8-ecg-96.png> </Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/./images//icons8-stocks-80.png> </Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/images/qr-code.png> </Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/images/blue_swansea_logo.jpg>] (/Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/main.aux) ) 
+{/usr/local/texlive/2021/texmf-var/fonts/map/pdftex/updmap/pdftex.map} </Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/./images//worst_case_communication.png> </Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/./images//mnist_accuracy_200.png> </Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/./images//ringtmp_example.png> </Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/./images//parameter_server.png> </Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/./images//mnist_accuracy_over_time.png> </Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/images/mnist_timing_violinplot.png> </Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/images/project_qr_code.png> </Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/images/blue_swansea_logo.jpg>] (/Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/main.aux) ) 
 Here is how much of TeX's memory you used:
- 14623 strings out of 478994
- 291822 string characters out of 5858184
- 657269 words of memory out of 5000000
- 31758 multiletter control sequences out of 15000+600000
- 461078 words of font info for 67 fonts, out of 8000000 for 9000
+ 15383 strings out of 478994
+ 304505 string characters out of 5858184
+ 674628 words of memory out of 5000000
+ 32487 multiletter control sequences out of 15000+600000
+ 460701 words of font info for 66 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 112i,12n,116p,457b,399s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}</usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmmi12.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmss12.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmss17.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmss8.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmssbx10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmsso12.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmsy10.pfb>
-Output written on /Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/main.pdf (1 page, 163168 bytes).
+ 112i,12n,116p,487b,399s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}</usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmss12.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmss17.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmss8.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmssbx10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmsy10.pfb>
+Output written on /Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/main.pdf (1 page, 371315 bytes).
 PDF statistics:
- 55 PDF objects out of 1000 (max. 8388607)
- 37 compressed objects within 1 object stream
+ 52 PDF objects out of 1000 (max. 8388607)
+ 28 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 33 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 53 words of extra memory for PDF output out of 10000 (max. 10000000)
 

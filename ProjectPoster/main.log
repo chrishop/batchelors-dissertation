@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.4.29)  29 APR 2021 17:55
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.4.29)  29 APR 2021 19:53
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -693,74 +693,74 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <7> on input line 24.
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <5> on input line 24.
-LaTeX Font Info:    Trying to load font information for TS1+lmss on input line 68.
+LaTeX Font Info:    Trying to load font information for TS1+lmss on input line 70.
  (/usr/local/texlive/2021/texmf-dist/tex/latex/lm/ts1lmss.fd
 File: ts1lmss.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-Underfull \hbox (badness 10000) in paragraph at lines 68--68
+Underfull \hbox (badness 10000) in paragraph at lines 70--70
 []\T1/lmss/m/n/12 Current dis-tributed ma-chine
  []
 
 
-Underfull \hbox (badness 5667) in paragraph at lines 68--68
+Underfull \hbox (badness 5667) in paragraph at lines 70--70
 \T1/lmss/m/n/12 learn-ing (DML) mod-els are
  []
 
 
-Underfull \hbox (badness 5022) in paragraph at lines 68--68
+Underfull \hbox (badness 10000) in paragraph at lines 70--70
+\T1/lmss/m/n/12 ul-ti-mately lim-it-ing train-ing
+ []
+
+
+Underfull \hbox (badness 5022) in paragraph at lines 70--70
 []\T1/lmss/m/n/12 Can we de-crease com-mu-ni-
  []
 
 <./images//worst_case_communication.png, id=4, 462.528pt x 346.896pt>
 File: ./images//worst_case_communication.png Graphic file (type png)
 <use ./images//worst_case_communication.png>
-Package pdftex.def Info: ./images//worst_case_communication.png  used on input line 68.
-(pdftex.def)             Requested size: 161.94595pt x 121.45775pt.
+Package pdftex.def Info: ./images//worst_case_communication.png  used on input line 70.
+(pdftex.def)             Requested size: 151.14992pt x 113.36446pt.
 <./images//mnist_accuracy_200.png, id=6, 462.528pt x 379.4175pt>
 File: ./images//mnist_accuracy_200.png Graphic file (type png)
 <use ./images//mnist_accuracy_200.png>
-Package pdftex.def Info: ./images//mnist_accuracy_200.png  used on input line 68.
-(pdftex.def)             Requested size: 161.94595pt x 132.84442pt.
-
-Underfull \hbox (badness 5359) in paragraph at lines 68--68
-\T1/lmss/m/n/12 duced slightly less ac-cu-rate
- []
-
+Package pdftex.def Info: ./images//mnist_accuracy_200.png  used on input line 70.
+(pdftex.def)             Requested size: 151.14992pt x 123.99237pt.
 <./images//ringtmp_example.png, id=7, 297.11pt x 285.065pt>
 File: ./images//ringtmp_example.png Graphic file (type png)
 <use ./images//ringtmp_example.png>
-Package pdftex.def Info: ./images//ringtmp_example.png  used on input line 94.
+Package pdftex.def Info: ./images//ringtmp_example.png  used on input line 96.
 (pdftex.def)             Requested size: 110.96584pt x 106.46848pt.
 <./images//parameter_server.png, id=8, 342.27875pt x 302.12875pt>
 File: ./images//parameter_server.png Graphic file (type png)
 <use ./images//parameter_server.png>
-Package pdftex.def Info: ./images//parameter_server.png  used on input line 94.
+Package pdftex.def Info: ./images//parameter_server.png  used on input line 96.
 (pdftex.def)             Requested size: 110.96584pt x 97.94633pt.
 <./images//mnist_accuracy_over_time.png, id=9, 462.528pt x 346.896pt>
 File: ./images//mnist_accuracy_over_time.png Graphic file (type png)
 <use ./images//mnist_accuracy_over_time.png>
-Package pdftex.def Info: ./images//mnist_accuracy_over_time.png  used on input line 94.
+Package pdftex.def Info: ./images//mnist_accuracy_over_time.png  used on input line 96.
 (pdftex.def)             Requested size: 153.6454pt x 115.23296pt.
 <images/mnist_timing_violinplot.png, id=10, 462.528pt x 346.896pt>
 File: images/mnist_timing_violinplot.png Graphic file (type png)
 <use images/mnist_timing_violinplot.png>
-Package pdftex.def Info: images/mnist_timing_violinplot.png  used on input line 94.
+Package pdftex.def Info: images/mnist_timing_violinplot.png  used on input line 96.
 (pdftex.def)             Requested size: 153.6454pt x 115.23296pt.
 <images/project_qr_code.png, id=11, 301.125pt x 374.39874pt>
 File: images/project_qr_code.png Graphic file (type png)
 <use images/project_qr_code.png>
-Package pdftex.def Info: images/project_qr_code.png  used on input line 99.
+Package pdftex.def Info: images/project_qr_code.png  used on input line 101.
 (pdftex.def)             Requested size: 74.76184pt x 92.95566pt.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 99.
+(Font)              <12> on input line 101.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 99.
+(Font)              <8> on input line 101.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 99.
+(Font)              <6> on input line 101.
 <images/blue_swansea_logo.jpg, id=12, 903.375pt x 903.375pt>
 File: images/blue_swansea_logo.jpg Graphic file (type jpg)
 <use images/blue_swansea_logo.jpg>
-Package pdftex.def Info: images/blue_swansea_logo.jpg  used on input line 99.
+Package pdftex.def Info: images/blue_swansea_logo.jpg  used on input line 101.
 (pdftex.def)             Requested size: 92.94803pt x 92.95566pt.
 [1
 
@@ -772,9 +772,9 @@ Here is how much of TeX's memory you used:
  32487 multiletter control sequences out of 15000+600000
  460701 words of font info for 66 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 112i,12n,116p,487b,399s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 112i,12n,116p,487b,407s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}</usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmss12.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmss17.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmss8.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmssbx10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmsy10.pfb>
-Output written on /Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/main.pdf (1 page, 371315 bytes).
+Output written on /Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/main.pdf (1 page, 371301 bytes).
 PDF statistics:
  52 PDF objects out of 1000 (max. 8388607)
  28 compressed objects within 1 object stream

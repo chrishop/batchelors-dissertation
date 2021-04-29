@@ -1,12 +1,12 @@
 # Fdb version 3
-["pdflatex"] 1619715335 "/Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/main.tex" "/Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/main.pdf" "main" 1619715337
+["pdflatex"] 1619722424 "/Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/main.tex" "/Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/main.pdf" "main" 1619722427
   "./images//mnist_accuracy_200.png" 1619706695 62629 f736fcdd9f5285fdadc8050ef08bcb77 ""
   "./images//mnist_accuracy_over_time.png" 1619706710 68765 8a9ec7d4cc066d8a8411c7a0cb8097b4 ""
   "./images//parameter_server.png" 1619706635 22532 c7d19c3b8a09e240927d1a3ed76e17ab ""
   "./images//ringtmp_example.png" 1619706602 18407 50460e5edeb51341bd19f2370c6a643d ""
   "./images//worst_case_communication.png" 1619706649 42924 8977080f346b0d1d372f340f208342c9 ""
-  "/Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/main.aux" 1619715336 361 19bf82d40cd97c6737e8fa8f6b2f772b ""
-  "/Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/main.tex" 1619715334 3748 3b5d4fc6bed1a40f2c337bb1686618dc ""
+  "/Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/main.aux" 1619722426 361 19bf82d40cd97c6737e8fa8f6b2f772b ""
+  "/Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/main.tex" 1619722424 3813 b1aaaf6f98b82e3e6392c7f9d07ce7af ""
   "/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc" 1254269338 2375 baa924870cfb487815765f9094cf3728 ""
   "/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc" 1202520719 2840 216e6e45ad352e2456e1149f28885bee ""
   "/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc" 1254269338 3031 6c4d3515bf7115d8518af1c9ab97ca44 ""
@@ -184,11 +184,11 @@
   "images/blue_swansea_logo.jpg" 1619703933 51875 7034e58e3af6cdbc146b4b6ffd57c348 ""
   "images/mnist_timing_violinplot.png" 1619715047 56713 36600706a555f554327dfce470e54e4c ""
   "images/project_qr_code.png" 1619705861 25515 e77868de810f75aeb333b16b10a3c033 ""
-  "main.aux" 1619715336 361 19bf82d40cd97c6737e8fa8f6b2f772b "pdflatex"
-  "main.tex" 1619715334 3748 3b5d4fc6bed1a40f2c337bb1686618dc ""
+  "main.aux" 1619722426 361 19bf82d40cd97c6737e8fa8f6b2f772b "pdflatex"
+  "main.tex" 1619722424 3813 b1aaaf6f98b82e3e6392c7f9d07ce7af ""
   (generated)
   "/Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/main.log"
-  "main.log"
   "main.pdf"
-  "main.aux"
   "/Users/hopkic16/Uni/Dissertation/batchelors-dissertation/ProjectPoster/main.pdf"
+  "main.log"
+  "main.aux"

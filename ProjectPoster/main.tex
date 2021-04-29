@@ -4,7 +4,7 @@
 \titlespacing{\section}{0pt}{2ex}{1ex}
 \titlespacing{\subsection}{0pt}{1ex}{0ex}
 \linespread{0.92}
-
+\hyphenpenalty=7000
 
 % ---- fill in from here
 
@@ -33,7 +33,7 @@
         \section{Intro}
         \begin{compactitem}
             \item Current distributed machine learning (DML) models are reaching
-            the limits of scalability due to increase communication leading to
+            the limits of scalability due to increased communication leading to
             network saturation, ultimately limiting training speed.
             \item Using a new paradigm to distribute nodes could result in less
             communication therefore more scalability \& reduced training times.
@@ -42,7 +42,7 @@
         \section{Problem Description}
         \begin{compactitem}
             \item Neural networks function by using using parameters in each
-            layer to transform the input, and pass the activation to then next
+            layer to transform the input, and pass the activation to the next
             layer.
             \item The parameter server (a popular DML paradigm) functions
             by broadcasting all parameters to its workers, which reply with a
@@ -53,15 +53,17 @@
         \columnbreak
 
         \section{Results}
+        \begin{center}
+            \includegraphics[width=0.84\linewidth]{worst_case_communication}\newline
+            \includegraphics[width=0.84\linewidth]{mnist_accuracy_200}
+        \end{center}
         
-        \includegraphics[width=0.9\linewidth]{worst_case_communication}\newline
-        \includegraphics[width=0.9\linewidth]{mnist_accuracy_200}
         \begin{compactitem}
             \item We trained a single node, a parameter server and a RingTMP
             implementation on the Iris and MNIST numbers dataset (10, 5 times
             respectively)
-            \item We found while RingTMP produced slightly less accurate models,
-            but reduces communication 8x per unit time even in the worst case.
+            \item We found RingTMP produced slightly less accurate models,
+            but reduces communication as much as 8x over a training session.
         \end{compactitem}
     
     \end{multicols}
